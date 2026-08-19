@@ -25,14 +25,17 @@
   }
   body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; min-height:100vh; }
 
+  /* Header */
   .header { background:var(--surface); border-bottom:1px solid var(--border); padding:14px 24px; display:flex; align-items:center; gap:12px; }
   .header-logo { width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--bg);font-family:var(--mono);flex-shrink:0; }
   .header-title { font-size:15px;font-weight:600; }
   .header-team { margin-left:8px;font-size:11px;font-family:var(--mono);background:var(--accent-dim);border:1px solid var(--accent)44;border-radius:10px;padding:2px 10px;color:var(--accent); }
   .header-sub { font-size:12px;color:var(--text-muted);margin-left:auto;font-family:var(--mono); }
 
+  /* Layout */
   .layout { display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 57px); }
 
+  /* Sidebar */
   .sidebar { background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden; }
   .sidebar-section { padding:14px 16px;border-bottom:1px solid var(--border2); }
   .sidebar-section label { display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:7px; }
@@ -57,6 +60,7 @@
   .btn-ghost:hover { background:var(--border);opacity:1; }
   .btn-sm { font-size:11px;padding:5px 10px; }
 
+  /* Incident list */
   .incident-list { flex:1;overflow-y:auto;padding:6px 0; }
   .incident-list::-webkit-scrollbar { width:4px; }
   .incident-list::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
@@ -71,6 +75,9 @@
   .badge-triggered { background:#f8514922;color:var(--red); }
   .badge-acknowledged { background:#d2992222;color:var(--yellow); }
   .badge-resolved { background:#3fb95022;color:var(--green); }
+  .badge-critical { background:#f8514922;color:var(--red); }
+  .badge-warning { background:#d2992222;color:var(--yellow); }
+  .badge-info { background:#58a6ff22;color:var(--accent); }
 
   .incident-time { font-family:var(--mono);font-size:10px;color:var(--text-muted); }
   .incident-service { font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px; }
@@ -86,30 +93,66 @@
 
   .error-bar { margin:8px 12px;padding:8px 12px;background:#f8514918;border:1px solid #f8514940;border-radius:6px;color:var(--red);font-size:11px;font-family:var(--mono); }
 
+  /* Main panel */
   .main { display:flex;flex-direction:column;overflow:hidden;background:var(--bg); }
-  .main-header { padding:16px 24px;border-bottom:1px solid var(--border2);display:flex;align-items:flex-start;gap:16px; }
-  .main-header-info { flex:1;min-width:0; }
-  .main-incident-title { font-size:16px;font-weight:600;margin-bottom:6px;line-height:1.3; }
-  .main-incident-meta { display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--text-muted); }
-  .meta-item { display:flex;align-items:center;gap:5px; }
-  .meta-label { font-weight:600;color:var(--text-dim);text-transform:uppercase;font-size:10px;letter-spacing:.05em; }
 
-  .main-body { flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent; }
+  /* Incident header strip */
+  .inc-header { padding:16px 24px;border-bottom:1px solid var(--border2);background:var(--surface); }
+  .inc-title { font-size:15px;font-weight:600;margin-bottom:8px;line-height:1.3; }
+  .inc-meta-grid { display:flex;flex-wrap:wrap;gap:16px; }
+  .meta-item { display:flex;flex-direction:column;gap:2px; }
+  .meta-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim); }
+  .meta-value { font-size:12px;color:var(--text-muted);font-family:var(--mono); }
+  .meta-value.highlight { color:var(--text); }
+
+  /* Collapsible sections */
+  .main-body { flex:1;overflow-y:auto;padding:16px 24px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent; }
   .main-body::-webkit-scrollbar { width:4px; }
   .main-body::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
 
-  .detail-card { background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden; }
-  .detail-card-header { padding:9px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;background:var(--surface2); }
-  .detail-card-title { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted); }
-  .detail-card-count { margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text-dim); }
-  .detail-card-body { padding:12px 14px; }
+  .section { background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden; }
+  .section-header {
+    padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;
+    background:var(--surface2);user-select:none;transition:background .1s;
+  }
+  .section-header:hover { background:var(--border2); }
+  .section-toggle { font-size:10px;color:var(--text-dim);transition:transform .2s;flex-shrink:0; }
+  .section-toggle.open { transform:rotate(90deg); }
+  .section-title { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);flex:1; }
+  .section-count { font-family:var(--mono);font-size:10px;color:var(--text-dim); }
+  .section-body { padding:12px 14px;display:none; }
+  .section-body.open { display:block; }
 
-  .alerts-table { width:100%;border-collapse:collapse;font-size:12px; }
-  .alerts-table th { text-align:left;padding:5px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);border-bottom:1px solid var(--border2); }
-  .alerts-table td { padding:7px 8px;border-bottom:1px solid var(--border2);vertical-align:top;color:var(--text-muted);font-family:var(--mono);font-size:11px; }
-  .alerts-table tr:last-child td { border-bottom:none; }
-  .alerts-table td.alert-summary { font-family:var(--sans);color:var(--text);font-size:12px; }
+  /* Overview grid */
+  .overview-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px; }
+  .overview-item { display:flex;flex-direction:column;gap:3px; }
+  .overview-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim); }
+  .overview-value { font-size:12px;color:var(--text);font-family:var(--mono);word-break:break-all; }
+  .overview-value a { color:var(--accent);text-decoration:none; }
+  .overview-value a:hover { text-decoration:underline; }
 
+  /* Alerts */
+  .alert-card { border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:10px; }
+  .alert-card:last-child { margin-bottom:0; }
+  .alert-card-header { padding:8px 12px;background:var(--surface2);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none; }
+  .alert-card-header:hover { background:var(--border2); }
+  .alert-card-title { font-size:12px;font-weight:500;flex:1;color:var(--text); }
+  .alert-card-body { padding:12px;display:none; }
+  .alert-card-body.open { display:block; }
+  .alert-detail-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px; }
+  .alert-detail-item { display:flex;flex-direction:column;gap:3px; }
+  .alert-detail-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim); }
+  .alert-detail-value { font-size:11px;color:var(--text-muted);font-family:var(--mono);word-break:break-all; }
+
+  /* Alert logs sub-table */
+  .alert-logs-title { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:6px; }
+  .alert-log-item { display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--border2);font-size:11px; }
+  .alert-log-item:last-child { border-bottom:none; }
+  .alert-log-time { font-family:var(--mono);color:var(--text-dim);flex-shrink:0;width:100px; }
+  .alert-log-activity { color:var(--text-muted);flex:1; }
+  .alert-log-activity b { color:var(--text); }
+
+  /* Timeline */
   .timeline { display:flex;flex-direction:column; }
   .timeline-item { display:flex;gap:12px;padding:8px 0;position:relative; }
   .timeline-item:not(:last-child)::before { content:'';position:absolute;left:5px;top:22px;bottom:-8px;width:1px;background:var(--border2); }
@@ -123,14 +166,31 @@
   .timeline-detail { font-size:11px;color:var(--text-muted);font-family:var(--mono); }
   .timeline-time { font-size:10px;color:var(--text-dim);font-family:var(--mono);flex-shrink:0;margin-top:3px; }
 
+  /* Notes */
+  .note-item { padding:10px 12px;background:var(--surface2);border-radius:6px;margin-bottom:8px;font-size:12px;line-height:1.5; }
+  .note-item:last-child { margin-bottom:0; }
+  .note-meta { font-size:10px;color:var(--text-dim);font-family:var(--mono);margin-bottom:4px; }
+  .note-content { color:var(--text-muted); }
+
+  /* Custom fields */
+  .custom-fields-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px; }
+  .cf-item { display:flex;flex-direction:column;gap:3px; }
+  .cf-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim); }
+  .cf-value { font-size:12px;color:var(--text);font-family:var(--mono); }
+
+  /* No selection */
   .no-selection { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:10px;text-align:center;padding:40px; }
   .no-selection-icon { font-size:34px;opacity:.2; }
   .no-selection-title { font-size:15px;font-weight:600;color:var(--text-dim); }
   .no-selection-sub { font-size:12px;color:var(--text-dim);max-width:260px;line-height:1.6; }
 
+  /* Action bar */
   .action-bar { padding:12px 24px;border-top:1px solid var(--border2);display:flex;align-items:center;gap:10px;background:var(--surface); }
   .action-bar-label { font-size:12px;color:var(--text-muted);flex:1; }
   .btn-analyze { font-size:13px;padding:8px 20px; }
+
+  .muted { color:var(--text-muted);font-size:12px; }
+  .code { font-family:var(--mono);font-size:11px;color:var(--text-muted);word-break:break-all; }
 </style>
 </head>
 <body>
@@ -139,12 +199,11 @@
   <div class="header-logo">OA</div>
   <div class="header-title">Outage Analyzer</div>
   <span class="header-team">Platform Engineering</span>
-  <div class="header-sub">v0.3</div>
+  <div class="header-sub">v0.4</div>
 </div>
 
 <div class="layout">
   <div class="sidebar">
-
     <div class="sidebar-section">
       <label>PagerDuty API Key</label>
       <div class="input-row">
@@ -152,7 +211,6 @@
         <button class="btn" id="btn-connect">Connect</button>
       </div>
     </div>
-
     <div class="sidebar-section" id="filter-section" style="display:none">
       <label>Filters</label>
       <div class="filter-row">
@@ -174,14 +232,12 @@
         <button class="btn btn-ghost btn-sm" id="btn-refresh" title="Refresh">↻</button>
       </div>
     </div>
-
     <div class="incident-list" id="incident-list">
       <div class="empty-state">
         <div class="empty-icon">🔌</div>
         <div class="empty-text">Enter your PagerDuty API key<br>and click Connect</div>
       </div>
     </div>
-
   </div>
 
   <div class="main" id="main-panel">
@@ -214,19 +270,20 @@ function pdFetch(path) {
   });
 }
 
+// ── Connect ───────────────────────────────────────────────────────────────────
 document.getElementById('btn-connect').addEventListener('click', connect);
 document.getElementById('pd-key').addEventListener('keydown', e => { if (e.key === 'Enter') connect(); });
 
-async function connect() {
+function connect() {
   const key = document.getElementById('pd-key').value.trim();
   if (!key) return;
   pdKey = key;
-  const btn = document.getElementById('btn-connect');
-  btn.textContent = '✓';
+  document.getElementById('btn-connect').textContent = '✓';
   document.getElementById('filter-section').style.display = '';
   loadIncidents();
 }
 
+// ── Load incidents ────────────────────────────────────────────────────────────
 document.getElementById('btn-refresh').addEventListener('click', loadIncidents);
 document.getElementById('filter-status').addEventListener('change', loadIncidents);
 document.getElementById('filter-range').addEventListener('change', loadIncidents);
@@ -272,22 +329,24 @@ function renderIncidentList() {
   });
 }
 
+// ── Select incident ───────────────────────────────────────────────────────────
 async function selectIncident(idx) {
   document.querySelectorAll('.incident-item').forEach(el => el.classList.remove('selected'));
   document.querySelectorAll('.incident-item')[idx + 1]?.classList.add('selected');
+
   const inc = incidents[idx];
   const main = document.getElementById('main-panel');
+
   main.innerHTML = `
-    <div class="main-header">
-      <div class="main-header-info">
-        <div class="main-incident-title">${escHtml(inc.title)}</div>
-        <div class="main-incident-meta">
-          <div class="meta-item"><span class="meta-label">Status</span><span class="badge ${badgeClass(inc.status)}">${inc.status}</span></div>
-          <div class="meta-item"><span class="meta-label">Service</span>${escHtml(inc.service?.summary || '—')}</div>
-          <div class="meta-item"><span class="meta-label">Triggered</span>${fmtTime(inc.created_at)}</div>
-          <div class="meta-item"><span class="meta-label">Duration</span>${fmtDuration(inc.created_at, inc.resolved_at)}</div>
-          <div class="meta-item"><span class="meta-label">Assignee</span>${escHtml(inc.assignments?.[0]?.assignee?.summary || '—')}</div>
-        </div>
+    <div class="inc-header">
+      <div class="inc-title">${escHtml(inc.title)}</div>
+      <div class="inc-meta-grid">
+        <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value"><span class="badge ${badgeClass(inc.status)}">${inc.status}</span></span></div>
+        <div class="meta-item"><span class="meta-label">Service</span><span class="meta-value highlight">${escHtml(inc.service?.summary || '—')}</span></div>
+        <div class="meta-item"><span class="meta-label">Triggered</span><span class="meta-value">${fmtTime(inc.created_at)}</span></div>
+        <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">${fmtDuration(inc.created_at, inc.resolved_at)}</span></div>
+        <div class="meta-item"><span class="meta-label">Assignee</span><span class="meta-value">${escHtml(inc.assignments?.[0]?.assignee?.summary || '—')}</span></div>
+        <div class="meta-item"><span class="meta-label">Urgency</span><span class="meta-value">${inc.urgency || '—'}</span></div>
       </div>
     </div>
     <div class="main-body" id="main-body">
@@ -298,40 +357,91 @@ async function selectIncident(idx) {
       <button class="btn btn-analyze" disabled id="btn-analyze">Analyze →</button>
     </div>
   `;
+
   try {
-    const [alertsData, logData] = await Promise.all([
-      pdFetch(`/incidents/${inc.id}/alerts?limit=25`),
-      pdFetch(`/incidents/${inc.id}/log_entries?limit=50&include[]=channel`)
+    const [alertsData, logData, notesData, cfData] = await Promise.all([
+      pdFetch(`/incidents/${inc.id}/alerts?limit=25&include[]=body`),
+      pdFetch(`/incidents/${inc.id}/log_entries?limit=50&include[]=channel`),
+      pdFetch(`/incidents/${inc.id}/notes`),
+      pdFetch(`/incidents/${inc.id}/custom_fields/values`).catch(() => ({ custom_fields: [] }))
     ]);
-    const alerts     = alertsData.alerts   || [];
-    const logEntries = logData.log_entries || [];
-    renderIncidentDetail(inc, alerts, logEntries);
-    document.getElementById('action-label').textContent = `Ready · ${escHtml(inc.service?.summary || 'Unknown service')} · ${fmtTime(inc.created_at)}`;
+
+    const alerts     = alertsData.alerts     || [];
+    const logEntries = logData.log_entries   || [];
+    const notes      = notesData.notes       || [];
+    const customFields = cfData.custom_fields || [];
+
+    renderDetail(inc, alerts, logEntries, notes, customFields);
+
+    document.getElementById('action-label').textContent = `Ready · ${escHtml(inc.service?.summary || '—')} · ${fmtTime(inc.created_at)}`;
     const btn = document.getElementById('btn-analyze');
     btn.disabled = false;
     btn.addEventListener('click', () => proceedToAnalysis(inc, alerts));
   } catch(e) {
-    document.getElementById('main-body').innerHTML = `<div class="error-bar">Failed to load details: ${e.message}</div>`;
+    document.getElementById('main-body').innerHTML = `<div class="error-bar">Failed to load: ${e.message}</div>`;
   }
 }
 
-function renderIncidentDetail(inc, alerts, logEntries) {
+// ── Render detail sections ────────────────────────────────────────────────────
+function renderDetail(inc, alerts, logEntries, notes, customFields) {
   const body = document.getElementById('main-body');
-  const alertsHtml = alerts.length ? `
-    <table class="alerts-table">
-      <thead><tr><th>Summary</th><th>Severity</th><th>Time</th><th>Source</th></tr></thead>
-      <tbody>${alerts.map(a => `
-        <tr>
-          <td class="alert-summary">${escHtml(a.summary || '—')}</td>
-          <td><span class="badge ${a.severity === 'critical' ? 'badge-triggered' : a.severity === 'warning' ? 'badge-acknowledged' : 'badge-resolved'}">${a.severity || '—'}</span></td>
-          <td>${fmtTime(a.created_at)}</td>
-          <td>${escHtml(a.body?.details?.hostname || a.body?.details?.source || '—')}</td>
-        </tr>
-      `).join('')}</tbody>
-    </table>
-  ` : '<div style="color:var(--text-muted);font-size:12px;">No alerts found.</div>';
 
-  const timelineHtml = logEntries.slice(0, 20).map(e => `
+  // ① Overview
+  const overviewHtml = `
+    <div class="overview-grid">
+      <div class="overview-item"><div class="overview-label">Incident #</div><div class="overview-value">${inc.incident_number}</div></div>
+      <div class="overview-item"><div class="overview-label">Escalation Policy</div><div class="overview-value">${escHtml(inc.escalation_policy?.summary || '—')}</div></div>
+      <div class="overview-item"><div class="overview-label">Opened At</div><div class="overview-value">${fmtTime(inc.created_at)}</div></div>
+      <div class="overview-item"><div class="overview-label">Resolved At</div><div class="overview-value">${inc.resolved_at ? fmtTime(inc.resolved_at) : '—'}</div></div>
+      <div class="overview-item"><div class="overview-label">Duration</div><div class="overview-value">${fmtDuration(inc.created_at, inc.resolved_at)}</div></div>
+      <div class="overview-item"><div class="overview-label">Impacted Service</div><div class="overview-value">${escHtml(inc.service?.summary || '—')}</div></div>
+      <div class="overview-item"><div class="overview-label">Alert Count</div><div class="overview-value">${alerts.length}</div></div>
+      <div class="overview-item"><div class="overview-label">PagerDuty Link</div><div class="overview-value"><a href="${inc.html_url}" target="_blank">Open ↗</a></div></div>
+    </div>
+  `;
+
+  // ② Alerts
+  const alertsHtml = alerts.length ? alerts.map((a, ai) => {
+    const details = a.body?.details || {};
+    const detailKeys = Object.keys(details).filter(k => details[k] && String(details[k]).length < 300);
+    const detailGrid = detailKeys.map(k => `
+      <div class="alert-detail-item">
+        <div class="alert-detail-label">${escHtml(k)}</div>
+        <div class="alert-detail-value">${escHtml(String(details[k]))}</div>
+      </div>
+    `).join('');
+
+    const logItems = (a.alert_log || []).map(l => `
+      <div class="alert-log-item">
+        <div class="alert-log-time">${fmtTime(l.created_at)}</div>
+        <div class="alert-log-activity">${escHtml(l.type || '')}</div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="alert-card">
+        <div class="alert-card-header" onclick="toggleAlertCard(${ai})">
+          <span class="badge ${a.severity === 'critical' ? 'badge-critical' : a.severity === 'warning' ? 'badge-warning' : 'badge-info'}">${a.severity || '?'}</span>
+          <div class="alert-card-title">${escHtml(a.summary || '—')}</div>
+          <span class="section-toggle" id="alert-toggle-${ai}">▶</span>
+        </div>
+        <div class="alert-card-body" id="alert-body-${ai}">
+          <div class="alert-detail-grid">
+            <div class="alert-detail-item"><div class="alert-detail-label">Status</div><div class="alert-detail-value">${a.status || '—'}</div></div>
+            <div class="alert-detail-item"><div class="alert-detail-label">Service</div><div class="alert-detail-value">${escHtml(a.service?.summary || '—')}</div></div>
+            <div class="alert-detail-item"><div class="alert-detail-label">Integration</div><div class="alert-detail-value">${escHtml(a.integration?.summary || '—')}</div></div>
+            <div class="alert-detail-item"><div class="alert-detail-label">Alert Times</div><div class="alert-detail-value">${fmtTime(a.created_at)}${a.resolved_at ? ' → ' + fmtTime(a.resolved_at) : ''}</div></div>
+            <div class="alert-detail-item"><div class="alert-detail-label">Alert Key</div><div class="alert-detail-value">${escHtml(a.alert_key || a.dedup_key || '—')}</div></div>
+            ${detailGrid}
+          </div>
+          ${logItems ? `<div class="alert-logs-title">Alert Logs</div><div>${logItems}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('') : '<div class="muted">No alerts found for this incident.</div>';
+
+  // ③ Timeline
+  const timelineHtml = logEntries.length ? logEntries.slice(0, 30).map(e => `
     <div class="timeline-item">
       <div class="timeline-dot ${dotClass(e.type)}"></div>
       <div class="timeline-content">
@@ -340,30 +450,73 @@ function renderIncidentDetail(inc, alerts, logEntries) {
       </div>
       <div class="timeline-time">${fmtTime(e.created_at)}</div>
     </div>
-  `).join('') || '<div style="color:var(--text-muted);font-size:12px;">No events.</div>';
+  `).join('') : '<div class="muted">No timeline events found.</div>';
+
+  // ④ Notes
+  const notesHtml = notes.length ? notes.map(n => `
+    <div class="note-item">
+      <div class="note-meta">${escHtml(n.user?.summary || 'Unknown')} · ${fmtTime(n.created_at)}</div>
+      <div class="note-content">${escHtml(n.content)}</div>
+    </div>
+  `).join('') : '<div class="muted">No notes on this incident.</div>';
+
+  // ⑤ Custom fields
+  const cfHtml = customFields.length ? `
+    <div class="custom-fields-grid">
+      ${customFields.map(f => `
+        <div class="cf-item">
+          <div class="cf-label">${escHtml(f.name || f.field?.display_name || '—')}</div>
+          <div class="cf-value">${escHtml(f.value !== null && f.value !== undefined ? String(f.value) : 'N/A')}</div>
+        </div>
+      `).join('')}
+    </div>
+  ` : '<div class="muted">No custom fields set.</div>';
 
   body.innerHTML = `
-    <div class="detail-card">
-      <div class="detail-card-header">
-        <div class="detail-card-title">Alerts</div>
-        <div class="detail-card-count">${alerts.length} alert${alerts.length !== 1 ? 's' : ''}</div>
+    ${makeSection('overview',  'Overview',         overviewHtml,  null,          true)}
+    ${makeSection('alerts',    'Alerts',            alertsHtml,    alerts.length, true)}
+    ${makeSection('timeline',  'Incident Timeline', `<div class="timeline">${timelineHtml}</div>`, logEntries.length, false)}
+    ${makeSection('notes',     'Notes',             notesHtml,     notes.length,  false)}
+    ${makeSection('cf',        'Custom Fields',     cfHtml,        customFields.length || null, false)}
+  `;
+
+  // Wire section toggles
+  body.querySelectorAll('.section-header').forEach(h => {
+    h.addEventListener('click', () => {
+      const id = h.dataset.section;
+      const bodyEl = document.getElementById(`sec-body-${id}`);
+      const toggle = document.getElementById(`sec-toggle-${id}`);
+      bodyEl.classList.toggle('open');
+      toggle.classList.toggle('open');
+    });
+  });
+}
+
+function makeSection(id, title, content, count, defaultOpen) {
+  return `
+    <div class="section">
+      <div class="section-header" data-section="${id}">
+        <span class="section-toggle ${defaultOpen ? 'open' : ''}" id="sec-toggle-${id}">▶</span>
+        <div class="section-title">${title}</div>
+        ${count !== null && count !== undefined ? `<div class="section-count">${count}</div>` : ''}
       </div>
-      <div class="detail-card-body">${alertsHtml}</div>
-    </div>
-    <div class="detail-card">
-      <div class="detail-card-header">
-        <div class="detail-card-title">Incident Timeline</div>
-        <div class="detail-card-count">${logEntries.length} events</div>
-      </div>
-      <div class="detail-card-body"><div class="timeline">${timelineHtml}</div></div>
+      <div class="section-body ${defaultOpen ? 'open' : ''}" id="sec-body-${id}">${content}</div>
     </div>
   `;
 }
+
+window.toggleAlertCard = function(idx) {
+  const body   = document.getElementById(`alert-body-${idx}`);
+  const toggle = document.getElementById(`alert-toggle-${idx}`);
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+};
 
 function proceedToAnalysis(inc, alerts) {
   alert(`Phase 2 coming up.\n\nIncident: ${inc.title}\nService: ${inc.service?.summary}\nTriggered: ${fmtTime(inc.created_at)}\n\nNext: TServer log ingestion + Claude API call.`);
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function showSidebarError(msg) {
   const list = document.getElementById('incident-list');
   const div = document.createElement('div');
