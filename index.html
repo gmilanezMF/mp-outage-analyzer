@@ -222,19 +222,9 @@ async function connect() {
   if (!key) return;
   pdKey = key;
   const btn = document.getElementById('btn-connect');
-  btn.textContent = '…';
-  btn.disabled = true;
-  try {
-    await pdFetch('/abilities');
-    btn.textContent = '✓';
-    document.getElementById('filter-section').style.display = '';
-    loadIncidents();
-  } catch(e) {
-    pdKey = '';
-    btn.textContent = 'Connect';
-    btn.disabled = false;
-    showSidebarError(`Auth failed: ${e.message}`);
-  }
+  btn.textContent = '✓';
+  document.getElementById('filter-section').style.display = '';
+  loadIncidents();
 }
 
 document.getElementById('btn-refresh').addEventListener('click', loadIncidents);
