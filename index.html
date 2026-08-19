@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outage Analyzer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --surface2:  #1f2937;
+    --border:    #30363d;
+    --border2:   #21262d;
+    --text:      #e6edf3;
+    --text-muted:#8b949e;
+    --text-dim:  #484f58;
+    --accent:    #58a6ff;
+    --accent-dim:#1f6feb33;
+    --green:     #3fb950;
+    --red:       #f85149;
+    --yellow:    #d29922;
+    --mono:      'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+    --sans:      -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  }
+  body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; min-height:100vh; }
+
+  .header { background:var(--surface); border-bottom:1px solid var(--border); padding:14px 24px; display:flex; align-items:center; gap:12px; }
+  .header-logo { width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--bg);font-family:var(--mono);flex-shrink:0; }
+  .header-title { font-size:15px;font-weight:600; }
+  .header-team { margin-left:8px;font-size:11px;font-family:var(--mono);background:var(--accent-dim);border:1px solid var(--accent)44;border-radius:10px;padding:2px 10px;color:var(--accent); }
+  .header-sub { font-size:12px;color:var(--text-muted);margin-left:auto;font-family:var(--mono); }
+
+  .layout { display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 57px); }
+
+  .sidebar { background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden; }
+  .sidebar-section { padding:14px 16px;border-bottom:1px solid var(--border2); }
+  .sidebar-section label { display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:7px; }
+
+  input[type="password"],select {
+    background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);
+    font-family:var(--mono);font-size:12px;padding:7px 10px;outline:none;width:100%;transition:border-color .15s;
+  }
+  input:focus,select:focus { border-color:var(--accent); }
+  input::placeholder { color:var(--text-dim); }
+  select option { background:var(--surface2); }
+
+  .input-row { display:flex;gap:8px; }
+  .filter-row { display:flex;gap:6px;margin-bottom:7px; }
+  .filter-row:last-child { margin-bottom:0; }
+  .filter-row select { flex:1; }
+
+  .btn { background:var(--accent);border:none;border-radius:6px;color:var(--bg);cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;padding:7px 14px;white-space:nowrap;transition:opacity .15s;flex-shrink:0; }
+  .btn:hover { opacity:.85; }
+  .btn:disabled { opacity:.4;cursor:not-allowed; }
+  .btn-ghost { background:var(--surface2);color:var(--text);border:1px solid var(--border); }
+  .btn-ghost:hover { background:var(--border);opacity:1; }
+  .btn-sm { font-size:11px;padding:5px 10px; }
+
+  .incident-list { flex:1;overflow-y:auto;padding:6px 0; }
+  .incident-list::-webkit-scrollbar { width:4px; }
+  .incident-list::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+
+  .incident-item { padding:10px 16px;cursor:pointer;border-left:3px solid transparent;transition:background .1s,border-color .1s; }
+  .incident-item:hover { background:var(--accent-dim); }
+  .incident-item.selected { background:var(--accent-dim);border-left-color:var(--accent); }
+  .incident-item-title { font-size:12px;font-weight:500;line-height:1.4;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+  .incident-meta { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+
+  .badge { font-size:10px;font-weight:600;padding:2px 6px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em;font-family:var(--mono); }
+  .badge-triggered { background:#f8514922;color:var(--red); }
+  .badge-acknowledged { background:#d2992222;color:var(--yellow); }
+  .badge-resolved { background:#3fb95022;color:var(--green); }
+
+  .incident-time { font-family:var(--mono);font-size:10px;color:var(--text-muted); }
+  .incident-service { font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px; }
+  .incident-count { font-size:10px;color:var(--text-dim);padding:6px 16px;font-family:var(--mono); }
+
+  .empty-state { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center;color:var(--text-muted);gap:8px; }
+  .empty-icon { font-size:26px;opacity:.35; }
+  .empty-text { font-size:12px;line-height:1.6; }
+
+  .loading-row { display:flex;align-items:center;gap:8px;padding:14px 16px;color:var(--text-muted);font-size:12px; }
+  .spinner { width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .error-bar { margin:8px 12px;padding:8px 12px;background:#f8514918;border:1px solid #f8514940;border-radius:6px;color:var(--red);font-size:11px;font-family:var(--mono); }
+
+  .main { display:flex;flex-direction:column;overflow:hidden;background:var(--bg); }
+  .main-header { padding:16px 24px;border-bottom:1px solid var(--border2);display:flex;align-items:flex-start;gap:16px; }
+  .main-header-info { flex:1;min-width:0; }
+  .main-incident-title { font-size:16px;font-weight:600;margin-bottom:6px;line-height:1.3; }
+  .main-incident-meta { display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--text-muted); }
+  .meta-item { display:flex;align-items:center;gap:5px; }
+  .meta-label { font-weight:600;color:var(--text-dim);text-transform:uppercase;font-size:10px;letter-spacing:.05em; }
+
+  .main-body { flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent; }
+  .main-body::-webkit-scrollbar { width:4px; }
+  .main-body::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+
+  .detail-card { background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden; }
+  .detail-card-header { padding:9px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;background:var(--surface2); }
+  .detail-card-title { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted); }
+  .detail-card-count { margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text-dim); }
+  .detail-card-body { padding:12px 14px; }
+
+  .alerts-table { width:100%;border-collapse:collapse;font-size:12px; }
+  .alerts-table th { text-align:left;padding:5px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);border-bottom:1px solid var(--border2); }
+  .alerts-table td { padding:7px 8px;border-bottom:1px solid var(--border2);vertical-align:top;color:var(--text-muted);font-family:var(--mono);font-size:11px; }
+  .alerts-table tr:last-child td { border-bottom:none; }
+  .alerts-table td.alert-summary { font-family:var(--sans);color:var(--text);font-size:12px; }
+
+  .timeline { display:flex;flex-direction:column; }
+  .timeline-item { display:flex;gap:12px;padding:8px 0;position:relative; }
+  .timeline-item:not(:last-child)::before { content:'';position:absolute;left:5px;top:22px;bottom:-8px;width:1px;background:var(--border2); }
+  .timeline-dot { width:11px;height:11px;border-radius:50%;background:var(--border);border:2px solid var(--surface);flex-shrink:0;margin-top:3px;position:relative;z-index:1; }
+  .timeline-dot.trigger { background:var(--red); }
+  .timeline-dot.ack { background:var(--yellow); }
+  .timeline-dot.resolve { background:var(--green); }
+  .timeline-dot.notify { background:var(--accent); }
+  .timeline-content { flex:1;min-width:0; }
+  .timeline-type { font-size:11px;font-weight:600;margin-bottom:2px; }
+  .timeline-detail { font-size:11px;color:var(--text-muted);font-family:var(--mono); }
+  .timeline-time { font-size:10px;color:var(--text-dim);font-family:var(--mono);flex-shrink:0;margin-top:3px; }
+
+  .no-selection { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:10px;text-align:center;padding:40px; }
+  .no-selection-icon { font-size:34px;opacity:.2; }
+  .no-selection-title { font-size:15px;font-weight:600;color:var(--text-dim); }
+  .no-selection-sub { font-size:12px;color:var(--text-dim);max-width:260px;line-height:1.6; }
+
+  .action-bar { padding:12px 24px;border-top:1px solid var(--border2);display:flex;align-items:center;gap:10px;background:var(--surface); }
+  .action-bar-label { font-size:12px;color:var(--text-muted);flex:1; }
+  .btn-analyze { font-size:13px;padding:8px 20px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">OA</div>
+  <div class="header-title">Outage Analyzer</div>
+  <span class="header-team">Platform Engineering</span>
+  <div class="header-sub">v0.3</div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+
+    <div class="sidebar-section">
+      <label>PagerDuty API Key</label>
+      <div class="input-row">
+        <input type="password" id="pd-key" placeholder="u+xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+        <button class="btn" id="btn-connect">Connect</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section" id="filter-section" style="display:none">
+      <label>Filters</label>
+      <div class="filter-row">
+        <select id="filter-status">
+          <option value="triggered,acknowledged">Active (triggered + acked)</option>
+          <option value="triggered">Triggered only</option>
+          <option value="acknowledged">Acknowledged only</option>
+          <option value="resolved">Resolved</option>
+          <option value="triggered,acknowledged,resolved">All statuses</option>
+        </select>
+      </div>
+      <div class="filter-row">
+        <select id="filter-range">
+          <option value="6">Last 6 hours</option>
+          <option value="24" selected>Last 24 hours</option>
+          <option value="72">Last 3 days</option>
+          <option value="168">Last 7 days</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" id="btn-refresh" title="Refresh">↻</button>
+      </div>
+    </div>
+
+    <div class="incident-list" id="incident-list">
+      <div class="empty-state">
+        <div class="empty-icon">🔌</div>
+        <div class="empty-text">Enter your PagerDuty API key<br>and click Connect</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="main" id="main-panel">
+    <div class="no-selection">
+      <div class="no-selection-icon">📋</div>
+      <div class="no-selection-title">No incident selected</div>
+      <div class="no-selection-sub">Connect to PagerDuty, then select a PE incident to begin</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROXY   = 'https://api.allorigins.win/raw?url=';
+const PD_BASE = 'https://api.pagerduty.com';
+const PE_TEAM = 'P3P5G66';
+
+let pdKey = '';
+let incidents = [];
+
+function pdFetch(path) {
+  const url = encodeURIComponent(`${PD_BASE}${path}`);
+  return fetch(`${PROXY}${url}`, {
+    headers: {
+      'Accept': 'application/vnd.pagerduty+json;version=2',
+      'Authorization': `Token token=${pdKey}`
+    }
+  }).then(r => {
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    return r.json();
+  });
+}
+
+document.getElementById('btn-connect').addEventListener('click', connect);
+document.getElementById('pd-key').addEventListener('keydown', e => { if (e.key === 'Enter') connect(); });
+
+async function connect() {
+  const key = document.getElementById('pd-key').value.trim();
+  if (!key) return;
+  pdKey = key;
+  const btn = document.getElementById('btn-connect');
+  btn.textContent = '…';
+  btn.disabled = true;
+  try {
+    await pdFetch('/abilities');
+    btn.textContent = '✓';
+    document.getElementById('filter-section').style.display = '';
+    loadIncidents();
+  } catch(e) {
+    pdKey = '';
+    btn.textContent = 'Connect';
+    btn.disabled = false;
+    showSidebarError(`Auth failed: ${e.message}`);
+  }
+}
+
+document.getElementById('btn-refresh').addEventListener('click', loadIncidents);
+document.getElementById('filter-status').addEventListener('change', loadIncidents);
+document.getElementById('filter-range').addEventListener('change', loadIncidents);
+
+async function loadIncidents() {
+  const statusVal = document.getElementById('filter-status').value;
+  const hours     = parseInt(document.getElementById('filter-range').value);
+  const since     = new Date(Date.now() - hours * 3600000).toISOString();
+  const statuses  = statusVal.split(',').map(s => `statuses[]=${s}`).join('&');
+  const list = document.getElementById('incident-list');
+  list.innerHTML = `<div class="loading-row"><div class="spinner"></div>Fetching PE incidents…</div>`;
+  try {
+    const data = await pdFetch(`/incidents?${statuses}&since=${since}&limit=100&sort_by=created_at:desc&team_ids[]=${PE_TEAM}`);
+    incidents = data.incidents || [];
+    renderIncidentList();
+  } catch(e) {
+    list.innerHTML = '';
+    showSidebarError(`Failed to load: ${e.message}`);
+  }
+}
+
+function renderIncidentList() {
+  const list = document.getElementById('incident-list');
+  if (!incidents.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">No incidents found<br>for the selected filters</div></div>`;
+    return;
+  }
+  list.innerHTML = `
+    <div class="incident-count">${incidents.length} incident${incidents.length !== 1 ? 's' : ''}</div>
+    ${incidents.map((inc, i) => `
+      <div class="incident-item" data-idx="${i}">
+        <div class="incident-item-title">${escHtml(inc.title)}</div>
+        <div class="incident-meta">
+          <span class="badge ${badgeClass(inc.status)}">${inc.status}</span>
+          <span class="incident-time">${fmtTime(inc.created_at)}</span>
+          <span class="incident-service">${escHtml(inc.service?.summary || '—')}</span>
+        </div>
+      </div>
+    `).join('')}
+  `;
+  list.querySelectorAll('.incident-item').forEach(el => {
+    el.addEventListener('click', () => selectIncident(parseInt(el.dataset.idx)));
+  });
+}
+
+async function selectIncident(idx) {
+  document.querySelectorAll('.incident-item').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.incident-item')[idx + 1]?.classList.add('selected');
+  const inc = incidents[idx];
+  const main = document.getElementById('main-panel');
+  main.innerHTML = `
+    <div class="main-header">
+      <div class="main-header-info">
+        <div class="main-incident-title">${escHtml(inc.title)}</div>
+        <div class="main-incident-meta">
+          <div class="meta-item"><span class="meta-label">Status</span><span class="badge ${badgeClass(inc.status)}">${inc.status}</span></div>
+          <div class="meta-item"><span class="meta-label">Service</span>${escHtml(inc.service?.summary || '—')}</div>
+          <div class="meta-item"><span class="meta-label">Triggered</span>${fmtTime(inc.created_at)}</div>
+          <div class="meta-item"><span class="meta-label">Duration</span>${fmtDuration(inc.created_at, inc.resolved_at)}</div>
+          <div class="meta-item"><span class="meta-label">Assignee</span>${escHtml(inc.assignments?.[0]?.assignee?.summary || '—')}</div>
+        </div>
+      </div>
+    </div>
+    <div class="main-body" id="main-body">
+      <div class="loading-row"><div class="spinner"></div>Loading incident details…</div>
+    </div>
+    <div class="action-bar">
+      <div class="action-bar-label" id="action-label">Loading…</div>
+      <button class="btn btn-analyze" disabled id="btn-analyze">Analyze →</button>
+    </div>
+  `;
+  try {
+    const [alertsData, logData] = await Promise.all([
+      pdFetch(`/incidents/${inc.id}/alerts?limit=25`),
+      pdFetch(`/incidents/${inc.id}/log_entries?limit=50&include[]=channel`)
+    ]);
+    const alerts     = alertsData.alerts   || [];
+    const logEntries = logData.log_entries || [];
+    renderIncidentDetail(inc, alerts, logEntries);
+    document.getElementById('action-label').textContent = `Ready · ${escHtml(inc.service?.summary || 'Unknown service')} · ${fmtTime(inc.created_at)}`;
+    const btn = document.getElementById('btn-analyze');
+    btn.disabled = false;
+    btn.addEventListener('click', () => proceedToAnalysis(inc, alerts));
+  } catch(e) {
+    document.getElementById('main-body').innerHTML = `<div class="error-bar">Failed to load details: ${e.message}</div>`;
+  }
+}
+
+function renderIncidentDetail(inc, alerts, logEntries) {
+  const body = document.getElementById('main-body');
+  const alertsHtml = alerts.length ? `
+    <table class="alerts-table">
+      <thead><tr><th>Summary</th><th>Severity</th><th>Time</th><th>Source</th></tr></thead>
+      <tbody>${alerts.map(a => `
+        <tr>
+          <td class="alert-summary">${escHtml(a.summary || '—')}</td>
+          <td><span class="badge ${a.severity === 'critical' ? 'badge-triggered' : a.severity === 'warning' ? 'badge-acknowledged' : 'badge-resolved'}">${a.severity || '—'}</span></td>
+          <td>${fmtTime(a.created_at)}</td>
+          <td>${escHtml(a.body?.details?.hostname || a.body?.details?.source || '—')}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>
+  ` : '<div style="color:var(--text-muted);font-size:12px;">No alerts found.</div>';
+
+  const timelineHtml = logEntries.slice(0, 20).map(e => `
+    <div class="timeline-item">
+      <div class="timeline-dot ${dotClass(e.type)}"></div>
+      <div class="timeline-content">
+        <div class="timeline-type">${fmtLogType(e.type)}</div>
+        <div class="timeline-detail">${escHtml(e.channel?.summary || e.summary || '')}</div>
+      </div>
+      <div class="timeline-time">${fmtTime(e.created_at)}</div>
+    </div>
+  `).join('') || '<div style="color:var(--text-muted);font-size:12px;">No events.</div>';
+
+  body.innerHTML = `
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <div class="detail-card-title">Alerts</div>
+        <div class="detail-card-count">${alerts.length} alert${alerts.length !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="detail-card-body">${alertsHtml}</div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <div class="detail-card-title">Incident Timeline</div>
+        <div class="detail-card-count">${logEntries.length} events</div>
+      </div>
+      <div class="detail-card-body"><div class="timeline">${timelineHtml}</div></div>
+    </div>
+  `;
+}
+
+function proceedToAnalysis(inc, alerts) {
+  alert(`Phase 2 coming up.\n\nIncident: ${inc.title}\nService: ${inc.service?.summary}\nTriggered: ${fmtTime(inc.created_at)}\n\nNext: TServer log ingestion + Claude API call.`);
+}
+
+function showSidebarError(msg) {
+  const list = document.getElementById('incident-list');
+  const div = document.createElement('div');
+  div.className = 'error-bar';
+  div.textContent = msg;
+  list.prepend(div);
+  setTimeout(() => div.remove(), 7000);
+}
+
+function badgeClass(s) {
+  return { triggered:'badge-triggered', acknowledged:'badge-acknowledged', resolved:'badge-resolved' }[s] || 'badge-triggered';
+}
+function dotClass(type) {
+  if (!type) return '';
+  const t = type.toLowerCase();
+  if (t.includes('trigger')) return 'trigger';
+  if (t.includes('acknowledge')) return 'ack';
+  if (t.includes('resolve')) return 'resolve';
+  return 'notify';
+}
+function fmtTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:false });
+}
+function fmtDuration(start, end) {
+  if (!start) return '—';
+  const ms = (end ? new Date(end) : new Date()) - new Date(start);
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+function fmtLogType(type) {
+  return (type || 'Event').replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
