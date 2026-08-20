@@ -188,7 +188,7 @@
   <div class="header-logo">OA</div>
   <div class="header-title">Outage Analyzer</div>
   <span class="header-team">Platform Engineering</span>
-  <div class="header-sub">v0.7</div>
+  <div class="header-sub">v0.8</div>
 </div>
 
 <div class="layout">
@@ -491,16 +491,26 @@ function renderDetail(inc, alerts, convertHost) {
   `;
 
   const alertsHtml = alerts.length ? alerts.map((a, ai) => {
-    // Find the trigger log entry on this alert's log entries
-    const triggerEntry = a._logEntries.find(e =>
-      e.type && (e.type.includes('trigger') || e.type.includes('notify'))
-    ) || a._logEntries[0];
+    // Primary: a.body is the full alert payload (fetched with include[]=body)
+    // It contains description, event_type, client, contexts, incident_key, service_key, details
+    const alertBody = a.body || {};
 
-    const payload = triggerEntry?.channel?.body || triggerEntry?.channel || null;
+    // Secondary: scan log entries for a richer channel body (fallback)
+    const richLogEntry = a._logEntries.find(e => {
+      const cb = e.channel?.body;
+      return cb && (cb.details || cb.description || cb.event_type);
+    });
+    const logPayload = richLogEntry?.channel?.body || null;
 
-    // Parse monitoring details from multiple possible locations
-    const detailsStr = payload?.details || payload?.description ||
-                       a.body?.details || a.body?.description || '';
+    // Best payload = alert body if it has useful keys, else log entry body
+    const hasRichAlertBody = alertBody && Object.keys(alertBody).some(k =>
+      !['type','summary'].includes(k) && alertBody[k] !== null
+    );
+    const payload      = hasRichAlertBody ? alertBody : (logPayload || alertBody || null);
+    const payloadTime  = hasRichAlertBody ? a.created_at : (richLogEntry?.created_at || a.created_at);
+
+    // Parse monitoring details — check both details string and description
+    const detailsStr = payload?.details || payload?.description || '';
     const monParsed  = parseMonDetails(typeof detailsStr === 'string' ? detailsStr : JSON.stringify(detailsStr));
 
     const monCallout = monParsed ? `
@@ -514,12 +524,12 @@ function renderDetail(inc, alerts, convertHost) {
       </div>
     ` : '';
 
-    const payloadSection = payload ? `
+    const payloadSection = payload && Object.keys(payload).length > 0 ? `
       <div class="event-payload-wrap">
-        <div class="event-payload-label">Event API Payload · ${fmtTime(triggerEntry?.created_at)}</div>
+        <div class="event-payload-label">Event API Payload · ${fmtTime(payloadTime)}</div>
         <div class="event-payload-box">${syntaxHighlight(payload)}</div>
       </div>
-    ` : '<div class="muted" style="margin-top:8px;">No event payload found on alert log entries.</div>';
+    ` : '<div class="muted" style="margin-top:8px;">No event payload available.</div>';
 
     // Standard alert details from body
     const details    = a.body?.details || {};
