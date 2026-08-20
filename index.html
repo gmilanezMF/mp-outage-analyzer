@@ -25,22 +25,19 @@
   }
   body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; min-height:100vh; }
 
-  /* Header */
   .header { background:var(--surface); border-bottom:1px solid var(--border); padding:14px 24px; display:flex; align-items:center; gap:12px; }
   .header-logo { width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--bg);font-family:var(--mono);flex-shrink:0; }
   .header-title { font-size:15px;font-weight:600; }
   .header-team { margin-left:8px;font-size:11px;font-family:var(--mono);background:var(--accent-dim);border:1px solid var(--accent)44;border-radius:10px;padding:2px 10px;color:var(--accent); }
   .header-sub { font-size:12px;color:var(--text-muted);margin-left:auto;font-family:var(--mono); }
 
-  /* Layout */
   .layout { display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 57px); }
 
-  /* Sidebar */
   .sidebar { background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden; }
   .sidebar-section { padding:14px 16px;border-bottom:1px solid var(--border2); }
   .sidebar-section label { display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:7px; }
 
-  input[type="password"],select {
+  input[type="password"],input[type="text"],select {
     background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);
     font-family:var(--mono);font-size:12px;padding:7px 10px;outline:none;width:100%;transition:border-color .15s;
   }
@@ -59,8 +56,8 @@
   .btn-ghost { background:var(--surface2);color:var(--text);border:1px solid var(--border); }
   .btn-ghost:hover { background:var(--border);opacity:1; }
   .btn-sm { font-size:11px;padding:5px 10px; }
+  .btn-active { background:var(--surface2);color:var(--accent);border:1px solid var(--accent); }
 
-  /* Incident list */
   .incident-list { flex:1;overflow-y:auto;padding:6px 0; }
   .incident-list::-webkit-scrollbar { width:4px; }
   .incident-list::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
@@ -93,11 +90,9 @@
 
   .error-bar { margin:8px 12px;padding:8px 12px;background:#f8514918;border:1px solid #f8514940;border-radius:6px;color:var(--red);font-size:11px;font-family:var(--mono); }
 
-  /* Main panel */
   .main { display:flex;flex-direction:column;overflow:hidden;background:var(--bg); }
 
-  /* Incident header strip */
-  .inc-header { padding:16px 24px;border-bottom:1px solid var(--border2);background:var(--surface); }
+  .inc-header { padding:14px 24px;border-bottom:1px solid var(--border2);background:var(--surface); }
   .inc-title { font-size:15px;font-weight:600;margin-bottom:8px;line-height:1.3; }
   .inc-meta-grid { display:flex;flex-wrap:wrap;gap:16px; }
   .meta-item { display:flex;flex-direction:column;gap:2px; }
@@ -105,16 +100,12 @@
   .meta-value { font-size:12px;color:var(--text-muted);font-family:var(--mono); }
   .meta-value.highlight { color:var(--text); }
 
-  /* Collapsible sections */
   .main-body { flex:1;overflow-y:auto;padding:16px 24px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent; }
   .main-body::-webkit-scrollbar { width:4px; }
   .main-body::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
 
   .section { background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden; }
-  .section-header {
-    padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;
-    background:var(--surface2);user-select:none;transition:background .1s;
-  }
+  .section-header { padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--surface2);user-select:none;transition:background .1s; }
   .section-header:hover { background:var(--border2); }
   .section-toggle { font-size:10px;color:var(--text-dim);transition:transform .2s;flex-shrink:0; }
   .section-toggle.open { transform:rotate(90deg); }
@@ -123,7 +114,6 @@
   .section-body { padding:12px 14px;display:none; }
   .section-body.open { display:block; }
 
-  /* Overview grid */
   .overview-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px; }
   .overview-item { display:flex;flex-direction:column;gap:3px; }
   .overview-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim); }
@@ -131,7 +121,23 @@
   .overview-value a { color:var(--accent);text-decoration:none; }
   .overview-value a:hover { text-decoration:underline; }
 
-  /* Alerts */
+  /* TServer Actions */
+  .tserver-section { background:var(--surface);border:1px solid var(--accent)44;border-radius:8px;overflow:hidden; }
+  .tserver-header { padding:10px 14px;display:flex;align-items:center;gap:8px;background:#1f6feb18; }
+  .tserver-title { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);flex:1; }
+  .tserver-body { padding:14px; }
+  .tserver-host-row { display:flex;align-items:center;gap:8px;margin-bottom:12px; }
+  .tserver-host-label { font-size:11px;color:var(--text-muted);white-space:nowrap; }
+  .tserver-host-val { font-family:var(--mono);font-size:12px;color:var(--green);flex:1;word-break:break-all; }
+  .tserver-host-manual { flex:1; }
+  .tserver-actions { display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap; }
+  .tserver-btn { background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;padding:7px 16px;transition:all .15s; }
+  .tserver-btn:hover { border-color:var(--accent);color:var(--accent); }
+  .tserver-btn.active { background:var(--accent-dim);border-color:var(--accent);color:var(--accent); }
+  .tserver-iframe-wrap { border:1px solid var(--border2);border-radius:6px;overflow:hidden;background:#fff; }
+  .tserver-iframe-wrap iframe { width:100%;height:480px;border:none;display:block; }
+  .tserver-vpn-note { font-size:10px;color:var(--text-dim);margin-top:6px;font-family:var(--mono); }
+
   .alert-card { border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:10px; }
   .alert-card:last-child { margin-bottom:0; }
   .alert-card-header { padding:8px 12px;background:var(--surface2);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none; }
@@ -144,15 +150,6 @@
   .alert-detail-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim); }
   .alert-detail-value { font-size:11px;color:var(--text-muted);font-family:var(--mono);word-break:break-all; }
 
-  /* Alert logs sub-table */
-  .alert-logs-title { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:6px; }
-  .alert-log-item { display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--border2);font-size:11px; }
-  .alert-log-item:last-child { border-bottom:none; }
-  .alert-log-time { font-family:var(--mono);color:var(--text-dim);flex-shrink:0;width:100px; }
-  .alert-log-activity { color:var(--text-muted);flex:1; }
-  .alert-log-activity b { color:var(--text); }
-
-  /* Timeline */
   .timeline { display:flex;flex-direction:column; }
   .timeline-item { display:flex;gap:12px;padding:8px 0;position:relative; }
   .timeline-item:not(:last-child)::before { content:'';position:absolute;left:5px;top:22px;bottom:-8px;width:1px;background:var(--border2); }
@@ -166,31 +163,25 @@
   .timeline-detail { font-size:11px;color:var(--text-muted);font-family:var(--mono); }
   .timeline-time { font-size:10px;color:var(--text-dim);font-family:var(--mono);flex-shrink:0;margin-top:3px; }
 
-  /* Notes */
   .note-item { padding:10px 12px;background:var(--surface2);border-radius:6px;margin-bottom:8px;font-size:12px;line-height:1.5; }
   .note-item:last-child { margin-bottom:0; }
   .note-meta { font-size:10px;color:var(--text-dim);font-family:var(--mono);margin-bottom:4px; }
   .note-content { color:var(--text-muted); }
 
-  /* Custom fields */
   .custom-fields-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px; }
   .cf-item { display:flex;flex-direction:column;gap:3px; }
   .cf-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim); }
   .cf-value { font-size:12px;color:var(--text);font-family:var(--mono); }
 
-  /* No selection */
   .no-selection { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:10px;text-align:center;padding:40px; }
   .no-selection-icon { font-size:34px;opacity:.2; }
   .no-selection-title { font-size:15px;font-weight:600;color:var(--text-dim); }
   .no-selection-sub { font-size:12px;color:var(--text-dim);max-width:260px;line-height:1.6; }
 
-  /* Action bar */
   .action-bar { padding:12px 24px;border-top:1px solid var(--border2);display:flex;align-items:center;gap:10px;background:var(--surface); }
   .action-bar-label { font-size:12px;color:var(--text-muted);flex:1; }
   .btn-analyze { font-size:13px;padding:8px 20px; }
-
   .muted { color:var(--text-muted);font-size:12px; }
-  .code { font-family:var(--mono);font-size:11px;color:var(--text-muted);word-break:break-all; }
 </style>
 </head>
 <body>
@@ -199,7 +190,7 @@
   <div class="header-logo">OA</div>
   <div class="header-title">Outage Analyzer</div>
   <span class="header-team">Platform Engineering</span>
-  <div class="header-sub">v0.4</div>
+  <div class="header-sub">v0.5</div>
 </div>
 
 <div class="layout">
@@ -253,9 +244,11 @@
 const PROXY   = 'https://corsproxy.io/?url=';
 const PD_BASE = 'https://api.pagerduty.com';
 const PE_TEAM = 'P3P5G66';
+const CONVERT_RE = /([a-z0-9\-]+\.convertlanguage\.com)/i;
 
 let pdKey = '';
 let incidents = [];
+let activeIframeAction = null; // 'vmstate' | 'status' | null
 
 function pdFetch(path) {
   const url = encodeURIComponent(`${PD_BASE}${path}`);
@@ -333,6 +326,7 @@ function renderIncidentList() {
 async function selectIncident(idx) {
   document.querySelectorAll('.incident-item').forEach(el => el.classList.remove('selected'));
   document.querySelectorAll('.incident-item')[idx + 1]?.classList.add('selected');
+  activeIframeAction = null;
 
   const inc = incidents[idx];
   const main = document.getElementById('main-panel');
@@ -366,12 +360,15 @@ async function selectIncident(idx) {
       pdFetch(`/incidents/${inc.id}/custom_fields/values`).catch(() => ({ custom_fields: [] }))
     ]);
 
-    const alerts     = alertsData.alerts     || [];
-    const logEntries = logData.log_entries   || [];
-    const notes      = notesData.notes       || [];
-    const customFields = cfData.custom_fields || [];
+    const alerts       = alertsData.alerts     || [];
+    const logEntries   = logData.log_entries   || [];
+    const notes        = notesData.notes       || [];
+    const customFields = cfData.custom_fields  || [];
 
-    renderDetail(inc, alerts, logEntries, notes, customFields);
+    // Detect convertlanguage host
+    const convertHost = detectConvertHost(inc, alerts);
+
+    renderDetail(inc, alerts, logEntries, notes, customFields, convertHost);
 
     document.getElementById('action-label').textContent = `Ready · ${escHtml(inc.service?.summary || '—')} · ${fmtTime(inc.created_at)}`;
     const btn = document.getElementById('btn-analyze');
@@ -382,11 +379,43 @@ async function selectIncident(idx) {
   }
 }
 
-// ── Render detail sections ────────────────────────────────────────────────────
-function renderDetail(inc, alerts, logEntries, notes, customFields) {
+// ── Detect convertlanguage host ───────────────────────────────────────────────
+function detectConvertHost(inc, alerts) {
+  // Search title
+  let m = inc.title.match(CONVERT_RE);
+  if (m) return m[1];
+
+  // Search all alert fields recursively
+  for (const a of alerts) {
+    const found = searchForConvert(a);
+    if (found) return found;
+  }
+  return null;
+}
+
+function searchForConvert(obj, depth = 0) {
+  if (depth > 6 || !obj) return null;
+  if (typeof obj === 'string') {
+    const m = obj.match(CONVERT_RE);
+    return m ? m[1] : null;
+  }
+  if (typeof obj === 'object') {
+    for (const val of Object.values(obj)) {
+      const found = searchForConvert(val, depth + 1);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+// ── Render detail ─────────────────────────────────────────────────────────────
+function renderDetail(inc, alerts, logEntries, notes, customFields, convertHost) {
   const body = document.getElementById('main-body');
 
-  // ① Overview
+  // TServer Actions section
+  const tserverHtml = buildTServerSection(convertHost);
+
+  // Overview
   const overviewHtml = `
     <div class="overview-grid">
       <div class="overview-item"><div class="overview-label">Incident #</div><div class="overview-value">${inc.incident_number}</div></div>
@@ -394,27 +423,19 @@ function renderDetail(inc, alerts, logEntries, notes, customFields) {
       <div class="overview-item"><div class="overview-label">Opened At</div><div class="overview-value">${fmtTime(inc.created_at)}</div></div>
       <div class="overview-item"><div class="overview-label">Resolved At</div><div class="overview-value">${inc.resolved_at ? fmtTime(inc.resolved_at) : '—'}</div></div>
       <div class="overview-item"><div class="overview-label">Duration</div><div class="overview-value">${fmtDuration(inc.created_at, inc.resolved_at)}</div></div>
-      <div class="overview-item"><div class="overview-label">Impacted Service</div><div class="overview-value">${escHtml(inc.service?.summary || '—')}</div></div>
       <div class="overview-item"><div class="overview-label">Alert Count</div><div class="overview-value">${alerts.length}</div></div>
       <div class="overview-item"><div class="overview-label">PagerDuty Link</div><div class="overview-value"><a href="${inc.html_url}" target="_blank">Open ↗</a></div></div>
     </div>
   `;
 
-  // ② Alerts
+  // Alerts
   const alertsHtml = alerts.length ? alerts.map((a, ai) => {
     const details = a.body?.details || {};
-    const detailKeys = Object.keys(details).filter(k => details[k] && String(details[k]).length < 300);
+    const detailKeys = Object.keys(details).filter(k => details[k] && String(details[k]).length < 400);
     const detailGrid = detailKeys.map(k => `
       <div class="alert-detail-item">
         <div class="alert-detail-label">${escHtml(k)}</div>
         <div class="alert-detail-value">${escHtml(String(details[k]))}</div>
-      </div>
-    `).join('');
-
-    const logItems = (a.alert_log || []).map(l => `
-      <div class="alert-log-item">
-        <div class="alert-log-time">${fmtTime(l.created_at)}</div>
-        <div class="alert-log-activity">${escHtml(l.type || '')}</div>
       </div>
     `).join('');
 
@@ -434,13 +455,12 @@ function renderDetail(inc, alerts, logEntries, notes, customFields) {
             <div class="alert-detail-item"><div class="alert-detail-label">Alert Key</div><div class="alert-detail-value">${escHtml(a.alert_key || a.dedup_key || '—')}</div></div>
             ${detailGrid}
           </div>
-          ${logItems ? `<div class="alert-logs-title">Alert Logs</div><div>${logItems}</div>` : ''}
         </div>
       </div>
     `;
-  }).join('') : '<div class="muted">No alerts found for this incident.</div>';
+  }).join('') : '<div class="muted">No alerts found.</div>';
 
-  // ③ Timeline
+  // Timeline
   const timelineHtml = logEntries.length ? logEntries.slice(0, 30).map(e => `
     <div class="timeline-item">
       <div class="timeline-dot ${dotClass(e.type)}"></div>
@@ -450,9 +470,9 @@ function renderDetail(inc, alerts, logEntries, notes, customFields) {
       </div>
       <div class="timeline-time">${fmtTime(e.created_at)}</div>
     </div>
-  `).join('') : '<div class="muted">No timeline events found.</div>';
+  `).join('') : '<div class="muted">No timeline events.</div>';
 
-  // ④ Notes
+  // Notes
   const notesHtml = notes.length ? notes.map(n => `
     <div class="note-item">
       <div class="note-meta">${escHtml(n.user?.summary || 'Unknown')} · ${fmtTime(n.created_at)}</div>
@@ -460,7 +480,7 @@ function renderDetail(inc, alerts, logEntries, notes, customFields) {
     </div>
   `).join('') : '<div class="muted">No notes on this incident.</div>';
 
-  // ⑤ Custom fields
+  // Custom fields
   const cfHtml = customFields.length ? `
     <div class="custom-fields-grid">
       ${customFields.map(f => `
@@ -473,24 +493,118 @@ function renderDetail(inc, alerts, logEntries, notes, customFields) {
   ` : '<div class="muted">No custom fields set.</div>';
 
   body.innerHTML = `
-    ${makeSection('overview',  'Overview',         overviewHtml,  null,          true)}
-    ${makeSection('alerts',    'Alerts',            alertsHtml,    alerts.length, true)}
-    ${makeSection('timeline',  'Incident Timeline', `<div class="timeline">${timelineHtml}</div>`, logEntries.length, false)}
-    ${makeSection('notes',     'Notes',             notesHtml,     notes.length,  false)}
-    ${makeSection('cf',        'Custom Fields',     cfHtml,        customFields.length || null, false)}
+    ${tserverHtml}
+    ${makeSection('overview', 'Overview',          overviewHtml, null,           true)}
+    ${makeSection('alerts',   'Alerts',             alertsHtml,   alerts.length,  true)}
+    ${makeSection('timeline', 'Incident Timeline',  `<div class="timeline">${timelineHtml}</div>`, logEntries.length, false)}
+    ${makeSection('notes',    'Notes',              notesHtml,    notes.length,   false)}
+    ${makeSection('cf',       'Custom Fields',      cfHtml,       null,           false)}
   `;
 
   // Wire section toggles
   body.querySelectorAll('.section-header').forEach(h => {
     h.addEventListener('click', () => {
       const id = h.dataset.section;
-      const bodyEl = document.getElementById(`sec-body-${id}`);
-      const toggle = document.getElementById(`sec-toggle-${id}`);
-      bodyEl.classList.toggle('open');
-      toggle.classList.toggle('open');
+      document.getElementById(`sec-body-${id}`).classList.toggle('open');
+      document.getElementById(`sec-toggle-${id}`).classList.toggle('open');
     });
   });
+
+  // Wire TServer manual input if present
+  const manualInput = document.getElementById('ts-manual-input');
+  if (manualInput) {
+    manualInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') applyManualHost(manualInput.value.trim());
+    });
+    document.getElementById('ts-manual-btn')?.addEventListener('click', () => {
+      applyManualHost(manualInput.value.trim());
+    });
+  }
 }
+
+// ── TServer section builder ───────────────────────────────────────────────────
+function buildTServerSection(host) {
+  const hostRow = host
+    ? `<div class="tserver-host-row">
+         <div class="tserver-host-label">🟢 Auto-detected:</div>
+         <div class="tserver-host-val">${escHtml(host)}</div>
+       </div>`
+    : `<div class="tserver-host-row" style="flex-wrap:wrap;gap:6px;">
+         <div class="tserver-host-label">⚠️ Not detected — enter manually:</div>
+         <input type="text" id="ts-manual-input" class="tserver-host-manual" placeholder="client.convertlanguage.com">
+         <button class="btn btn-sm" id="ts-manual-btn">Set</button>
+       </div>`;
+
+  return `
+    <div class="tserver-section" id="tserver-section">
+      <div class="tserver-header">
+        <div class="tserver-title">⚡ TServer Actions</div>
+      </div>
+      <div class="tserver-body">
+        ${hostRow}
+        <div class="tserver-actions" id="tserver-actions" ${!host ? 'style="display:none"' : ''}>
+          <button class="tserver-btn" id="btn-vmstate" onclick="loadTServerIframe('vmstate')">🖥 VM State</button>
+          <button class="tserver-btn" id="btn-status"  onclick="loadTServerIframe('status')">✅ TServer Status</button>
+        </div>
+        <div id="tserver-iframe-container"></div>
+        <div class="tserver-vpn-note">⚠️ VPN required for mpactionid endpoints</div>
+      </div>
+    </div>
+  `;
+}
+
+function applyManualHost(host) {
+  if (!host) return;
+  if (!host.includes('.convertlanguage.com')) {
+    host = host + '.convertlanguage.com';
+  }
+  // Update the host display
+  const row = document.querySelector('.tserver-host-row');
+  if (row) {
+    row.innerHTML = `<div class="tserver-host-label">✏️ Manual:</div><div class="tserver-host-val">${escHtml(host)}</div>`;
+  }
+  // Store host and show action buttons
+  document.getElementById('tserver-actions').style.display = '';
+  document.getElementById('tserver-actions').dataset.host = host;
+  // Also update buttons to use this host
+  window._tsHost = host;
+}
+
+window.loadTServerIframe = function(action) {
+  // Determine host
+  const actionsEl = document.getElementById('tserver-actions');
+  const host = window._tsHost || actionsEl?.dataset?.host || document.querySelector('.tserver-host-val')?.textContent?.trim();
+  if (!host) return;
+
+  // Toggle: if same action active, close it
+  if (activeIframeAction === action) {
+    activeIframeAction = null;
+    document.getElementById('tserver-iframe-container').innerHTML = '';
+    document.getElementById(`btn-vmstate`).classList.remove('active');
+    document.getElementById(`btn-status`).classList.remove('active');
+    return;
+  }
+
+  activeIframeAction = action;
+
+  // Update button states
+  document.getElementById('btn-vmstate').classList.toggle('active', action === 'vmstate');
+  document.getElementById('btn-status').classList.toggle('active', action === 'status');
+
+  const mpactionid = action === 'vmstate' ? '1073741829' : '1';
+  const url = `https://${host}/?mpactionid=${mpactionid}`;
+
+  document.getElementById('tserver-iframe-container').innerHTML = `
+    <div class="tserver-iframe-wrap">
+      <iframe src="${escHtml(url)}" title="${action === 'vmstate' ? 'VM State' : 'TServer Status'}"></iframe>
+    </div>
+  `;
+};
+
+window.toggleAlertCard = function(idx) {
+  document.getElementById(`alert-body-${idx}`).classList.toggle('open');
+  document.getElementById(`alert-toggle-${idx}`).classList.toggle('open');
+};
 
 function makeSection(id, title, content, count, defaultOpen) {
   return `
@@ -504,13 +618,6 @@ function makeSection(id, title, content, count, defaultOpen) {
     </div>
   `;
 }
-
-window.toggleAlertCard = function(idx) {
-  const body   = document.getElementById(`alert-body-${idx}`);
-  const toggle = document.getElementById(`alert-toggle-${idx}`);
-  body.classList.toggle('open');
-  toggle.classList.toggle('open');
-};
 
 function proceedToAnalysis(inc, alerts) {
   alert(`Phase 2 coming up.\n\nIncident: ${inc.title}\nService: ${inc.service?.summary}\nTriggered: ${fmtTime(inc.created_at)}\n\nNext: TServer log ingestion + Claude API call.`);
