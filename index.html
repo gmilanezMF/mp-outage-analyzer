@@ -140,6 +140,11 @@
   .tserver-iframe-wrap { border:1px solid var(--border2);border-radius:6px;overflow:hidden;background:#fff; }
   .tserver-iframe-wrap iframe { width:100%;height:480px;border:none;display:block; }
   .tserver-vpn-note { font-size:10px;color:var(--text-dim);margin-top:6px;font-family:var(--mono); }
+  .tserver-paste-section { padding:10px 14px 14px; }
+  .tserver-paste-label { font-size:11px; color:var(--text-muted); margin-bottom:6px; }
+  .tserver-paste-area { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:var(--mono); font-size:11px; padding:8px 10px; resize:vertical; outline:none; line-height:1.5; }
+  .tserver-paste-area:focus { border-color:var(--accent); }
+  .tserver-paste-area::placeholder { color:var(--text-dim); }
 
   .alert-card { border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:10px; }
   .alert-card:last-child { margin-bottom:0; }
@@ -666,7 +671,11 @@ function buildTServerSection(host) {
           <button class="tserver-btn" id="btn-status"  onclick="loadTServerIframe('status')">✅ TServer Status</button>
         </div>
         <div id="tserver-iframe-container"></div>
-        <div class="tserver-vpn-note">⚠️ VPN required for mpactionid endpoints</div>
+        <div class="tserver-vpn-note">⚠️ VPN required for mpactionid endpoints · App auto-fetches via proxy at analysis time</div>
+        <div class="tserver-paste-section">
+          <div class="tserver-paste-label">📋 VM State — paste output here if proxy can't reach it (VPN-only servers)</div>
+          <textarea id="vmstate-paste" class="tserver-paste-area" placeholder="Paste VM State output here (?mpactionid=1073741829)…" rows="4"></textarea>
+        </div>
       </div>
     </div>
   `;
@@ -733,6 +742,40 @@ function syntaxHighlight(obj) {
   );
 }
 
+// ── TServer live data fetch ───────────────────────────────────────────────────
+async function fetchTServerData(host) {
+  const proxy = 'https://corsproxy.io/?url=';
+  const results = {};
+
+  const tryFetch = async (label, url) => {
+    try {
+      const r = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) return `[${label}: HTTP ${r.status}]`;
+      const text = await r.text();
+      return text.substring(0, 8000); // cap size
+    } catch(e) {
+      return `[${label}: unreachable — ${e.message}]`;
+    }
+  };
+
+  const [status, vmstate] = await Promise.all([
+    tryFetch('TServer Status', `https://${host}/?mpactionid=1`),
+    tryFetch('VM State',       `https://${host}/?mpactionid=1073741829`),
+  ]);
+
+  results.status  = status;
+  results.vmstate = vmstate;
+
+  // Also grab any manually pasted VM state from the textarea
+  const pasteEl = document.getElementById('vmstate-paste');
+  if (pasteEl && pasteEl.value.trim()) {
+    results.vmstate = pasteEl.value.trim();
+    results.vmstate_source = 'manual_paste';
+  }
+
+  return results;
+}
+
 // ── KB Files (GitHub raw) ─────────────────────────────────────────────────────
 const KB_REPO   = 'gmilanezMF/mp-platform-kb';
 const KB_BRANCH = 'main';
@@ -788,19 +831,41 @@ async function proceedToAnalysis(inc, alerts) {
   if (!btn || btn.disabled) return;
 
   btn.disabled = true;
-  btn.textContent = 'Loading KB…';
-  label.textContent = 'Fetching knowledge base…';
+  label.textContent = 'Fetching TServer data…';
+  btn.textContent = 'Fetching…';
 
-  let kbContent = '';
-  try {
-    kbContent = await fetchKB();
-    btn.textContent = 'Analyzing…';
-    label.textContent = 'Calling Claude API…';
-  } catch(e) {
-    label.textContent = `KB fetch failed: ${e.message}`;
-    btn.disabled = false;
-    btn.textContent = 'Analyze →';
-    return;
+  // Fetch TServer live data + KB in parallel
+  const host = window._tsHost || null;
+  const [tsData, kbContent] = await Promise.all([
+    host ? fetchTServerData(host) : Promise.resolve(null),
+    (async () => {
+      btn.textContent = 'Loading KB…';
+      label.textContent = 'Fetching knowledge base…';
+      try { return await fetchKB(); }
+      catch(e) { return `[KB fetch failed: ${e.message}]`; }
+    })()
+  ]);
+
+  btn.textContent = 'Analyzing…';
+  label.textContent = 'Calling Claude API…';
+
+  // Build TServer data section for Claude
+  let tsSection = '';
+  if (tsData) {
+    const statusOk  = tsData.status  && !tsData.status.startsWith('[');
+    const vmstateOk = tsData.vmstate && !tsData.vmstate.startsWith('[');
+    tsSection = `
+TSERVER LIVE DATA
+=================
+Host: ${host}
+TServer Status (?mpactionid=1): ${statusOk ? 'Retrieved' : 'Unreachable'}
+${tsData.status}
+
+VM State (?mpactionid=1073741829)${tsData.vmstate_source === 'manual_paste' ? ' [manually pasted]' : ''}:
+${vmstateOk ? tsData.vmstate : 'Unreachable — VPN may be required or server is down'}
+    `.trim();
+  } else {
+    tsSection = 'TSERVER LIVE DATA\n=================\nNo convertlanguage host detected — TServer data unavailable.';
   }
 
   // Build incident summary for Claude
@@ -826,6 +891,8 @@ Assignees: ${(inc.assignments||[]).map(a=>a.assignee?.summary).filter(Boolean).j
 
 ALERTS (${alerts.length})
 ${alertDetails || 'No alert details available'}
+
+${tsSection}
   `.trim();
 
   // Claude API call
