@@ -188,7 +188,7 @@
   <div class="header-logo">OA</div>
   <div class="header-title">Outage Analyzer</div>
   <span class="header-team">Platform Engineering</span>
-  <div class="header-sub">v0.8</div>
+  <div class="header-sub">v0.9</div>
 </div>
 
 <div class="layout">
@@ -679,8 +679,172 @@ function syntaxHighlight(obj) {
   );
 }
 
-function proceedToAnalysis(inc, alerts) {
-  alert(`Phase 2 coming up.\n\nIncident: ${inc.title}\nService: ${inc.service?.summary}\nTriggered: ${fmtTime(inc.created_at)}\n\nNext: TServer log ingestion + Claude API call.`);
+// ── KB Files (GitHub raw) ─────────────────────────────────────────────────────
+const KB_REPO = 'gmilanezMF/mp-platform-kb';
+const KB_BRANCH = 'main';
+const KB_FILES = [
+  'kb/project/CLAUDE.md',
+  'kb/project/reference_sitedown_cases.md',
+  'kb/project/reference_tserver_log_rules.md',
+  'kb/project/reference_server_health.md',
+  'kb/project/master_properties_cheatsheet.txt',
+  'kb/project/Bugs_extracted.txt',
+  'kb/project/reference_pd_incidents.json',
+  'kb/project/reference_convertlanguage_urls.json',
+];
+
+async function fetchKB() {
+  const base = `https://raw.githubusercontent.com/${KB_REPO}/${KB_BRANCH}`;
+  const results = await Promise.all(KB_FILES.map(async f => {
+    try {
+      const r = await fetch(`${base}/${f}`);
+      if (!r.ok) return `[${f}: not found]`;
+      const text = await r.text();
+      // For large JSON files, only include summary sections to save tokens
+      if (f.endsWith('reference_pd_incidents.json')) {
+        try {
+          const data = JSON.parse(text);
+          return `[${f}]\n${JSON.stringify({ meta: data.meta, summary: data.summary, all_notes: data.all_notes }, null, 2)}`;
+        } catch { return `[${f}]\n${text.substring(0, 50000)}`; }
+      }
+      return `[${f}]\n${text}`;
+    } catch(e) {
+      return `[${f}: fetch error - ${e.message}]`;
+    }
+  }));
+  return results.join('\n\n---\n\n');
+}
+
+async function proceedToAnalysis(inc, alerts) {
+  const btn = document.getElementById('btn-analyze');
+  const label = document.getElementById('action-label');
+  if (!btn || btn.disabled) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Loading KB…';
+  label.textContent = 'Fetching knowledge base…';
+
+  let kbContent = '';
+  try {
+    kbContent = await fetchKB();
+    btn.textContent = 'Analyzing…';
+    label.textContent = 'Calling Claude API…';
+  } catch(e) {
+    label.textContent = `KB fetch failed: ${e.message}`;
+    btn.disabled = false;
+    btn.textContent = 'Analyze →';
+    return;
+  }
+
+  // Build incident summary for Claude
+  const alertDetails = alerts.map(a => {
+    const body = a.body || {};
+    const cef = body.cef_details || {};
+    return `Alert: ${a.summary}\nSeverity: ${a.severity}\nDetails: ${cef.details || body.details || body.description || '—'}\nService: ${a.service?.summary || '—'}`;
+  }).join('\n\n');
+
+  const incidentPayload = `
+INCIDENT SUMMARY
+================
+Title: ${inc.title}
+Number: #${inc.incident_number}
+Status: ${inc.status}
+Service: ${inc.service?.summary || '—'}
+Escalation Policy: ${inc.escalation_policy?.summary || '—'}
+Triggered: ${fmtTime(inc.created_at)}
+Resolved: ${inc.resolved_at ? fmtTime(inc.resolved_at) : 'still open'}
+Duration: ${fmtDuration(inc.created_at, inc.resolved_at)}
+Urgency: ${inc.urgency || '—'}
+Assignees: ${(inc.assignments||[]).map(a=>a.assignee?.summary).filter(Boolean).join(', ') || '—'}
+
+ALERTS (${alerts.length})
+${alertDetails || 'No alert details available'}
+  `.trim();
+
+  // Claude API call
+  try {
+    const systemPrompt = `You are an expert MotionPoint Platform Engineering analyst. You analyze PagerDuty incidents and recommend resolutions based on historical patterns.
+
+Your knowledge base contains:
+- TServer configuration rules and troubleshooting guides
+- 3 years of resolved PE incidents with team notes (reference_pd_incidents.json)
+- Known error patterns and resolution rates (PE Incident Patterns & Known Fixes)
+- ConvertLanguage URL mappings per client (reference_convertlanguage_urls.json)
+- Bug and config rule extracts
+
+KNOWLEDGE BASE:
+${kbContent}
+
+RESPONSE FORMAT — always use this exact structure:
+1. **Incident Summary** — one sentence: what happened, which client, when
+2. **Signal Classification** — which signal type (A/B/C) and confidence
+3. **Root Cause** — most likely cause based on alert details and historical patterns
+4. **Evidence Trail** — 3–5 specific data points with timestamps
+5. **Recommended Actions** (ranked):
+   - 🥇 Immediate: [exact step with mpactionid or property if applicable]
+   - 🥈 If that fails: [next step]
+   - 🥉 Follow-up: [post-resolution check or ticket action]
+6. **Historical Match** — similar past incidents from the KB, with resolution that was used
+7. **Confidence** — High / Medium / Low + reason`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: incidentPayload }]
+      })
+    });
+
+    const data = await response.json();
+    const analysis = data.content?.[0]?.text || 'No response from Claude.';
+
+    // Render analysis in main panel
+    renderAnalysis(inc, analysis);
+    label.textContent = `Analysis complete · ${escHtml(inc.service?.summary || '—')}`;
+    btn.textContent = 'Re-analyze';
+    btn.disabled = false;
+    btn.onclick = () => proceedToAnalysis(inc, alerts);
+
+  } catch(e) {
+    label.textContent = `Analysis failed: ${e.message}`;
+    btn.disabled = false;
+    btn.textContent = 'Retry →';
+  }
+}
+
+function renderAnalysis(inc, markdown) {
+  // Add analysis section to main body
+  const existing = document.getElementById('analysis-section');
+  if (existing) existing.remove();
+
+  const body = document.getElementById('main-body');
+  if (!body) return;
+
+  const div = document.createElement('div');
+  div.id = 'analysis-section';
+  div.style.cssText = 'background:#0d1117;border:1px solid #1f6feb;border-radius:8px;overflow:hidden;';
+
+  const header = document.createElement('div');
+  header.style.cssText = 'padding:10px 14px;background:#1f6feb22;display:flex;align-items:center;gap:8px;';
+  header.innerHTML = '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#58a6ff;">🤖 Claude Analysis</span>';
+  div.appendChild(header);
+
+  const content = document.createElement('div');
+  content.style.cssText = 'padding:16px;font-size:13px;line-height:1.7;color:#e6edf3;white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;';
+  // Simple markdown: bold
+  content.innerHTML = markdown
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/🥇|🥈|🥉/g, m => `<span style="font-size:16px">${m}</span>`)
+    .replace(/`([^`]+)`/g,'<code style="background:#161b22;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px;color:#79c0ff">$1</code>');
+  div.appendChild(content);
+
+  // Insert at top of main body
+  body.insertBefore(div, body.firstChild);
+  div.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function showSidebarError(msg) {
