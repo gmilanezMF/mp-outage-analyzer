@@ -56,7 +56,6 @@
   .btn-ghost { background:var(--surface2);color:var(--text);border:1px solid var(--border); }
   .btn-ghost:hover { background:var(--border);opacity:1; }
   .btn-sm { font-size:11px;padding:5px 10px; }
-  .btn-active { background:var(--surface2);color:var(--accent);border:1px solid var(--accent); }
 
   .incident-list { flex:1;overflow-y:auto;padding:6px 0; }
   .incident-list::-webkit-scrollbar { width:4px; }
@@ -104,6 +103,7 @@
   .main-body::-webkit-scrollbar { width:4px; }
   .main-body::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
 
+  /* Collapsible sections */
   .section { background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden; }
   .section-header { padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--surface2);user-select:none;transition:background .1s; }
   .section-header:hover { background:var(--border2); }
@@ -114,6 +114,7 @@
   .section-body { padding:12px 14px;display:none; }
   .section-body.open { display:block; }
 
+  /* Overview */
   .overview-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px; }
   .overview-item { display:flex;flex-direction:column;gap:3px; }
   .overview-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim); }
@@ -126,7 +127,7 @@
   .tserver-header { padding:10px 14px;display:flex;align-items:center;gap:8px;background:#1f6feb18; }
   .tserver-title { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);flex:1; }
   .tserver-body { padding:14px; }
-  .tserver-host-row { display:flex;align-items:center;gap:8px;margin-bottom:12px; }
+  .tserver-host-row { display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap; }
   .tserver-host-label { font-size:11px;color:var(--text-muted);white-space:nowrap; }
   .tserver-host-val { font-family:var(--mono);font-size:12px;color:var(--green);flex:1;word-break:break-all; }
   .tserver-host-manual { flex:1; }
@@ -138,6 +139,7 @@
   .tserver-iframe-wrap iframe { width:100%;height:480px;border:none;display:block; }
   .tserver-vpn-note { font-size:10px;color:var(--text-dim);margin-top:6px;font-family:var(--mono); }
 
+  /* Alerts */
   .alert-card { border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:10px; }
   .alert-card:last-child { margin-bottom:0; }
   .alert-card-header { padding:8px 12px;background:var(--surface2);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none; }
@@ -150,28 +152,31 @@
   .alert-detail-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim); }
   .alert-detail-value { font-size:11px;color:var(--text-muted);font-family:var(--mono);word-break:break-all; }
 
-  .timeline { display:flex;flex-direction:column; }
-  .timeline-item { display:flex;gap:12px;padding:8px 0;position:relative; }
-  .timeline-item:not(:last-child)::before { content:'';position:absolute;left:5px;top:22px;bottom:-8px;width:1px;background:var(--border2); }
-  .timeline-dot { width:11px;height:11px;border-radius:50%;background:var(--border);border:2px solid var(--surface);flex-shrink:0;margin-top:3px;position:relative;z-index:1; }
-  .timeline-dot.trigger { background:var(--red); }
-  .timeline-dot.ack { background:var(--yellow); }
-  .timeline-dot.resolve { background:var(--green); }
-  .timeline-dot.notify { background:var(--accent); }
-  .timeline-content { flex:1;min-width:0; }
-  .timeline-type { font-size:11px;font-weight:600;margin-bottom:2px; }
-  .timeline-detail { font-size:11px;color:var(--text-muted);font-family:var(--mono); }
-  .timeline-time { font-size:10px;color:var(--text-dim);font-family:var(--mono);flex-shrink:0;margin-top:3px; }
+  /* Event payload */
+  .event-payload-wrap { margin-top:10px; }
+  .event-payload-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:6px; }
+  .event-payload-box {
+    background:var(--bg);border:1px solid var(--border2);border-radius:6px;
+    padding:10px 12px;font-family:var(--mono);font-size:11px;line-height:1.6;
+    white-space:pre-wrap;word-break:break-all;max-height:320px;overflow-y:auto;
+    scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+  }
+  /* JSON syntax highlight */
+  .j-key    { color:#79c0ff; }
+  .j-str    { color:#a5d6ff; }
+  .j-num    { color:#f2cc60; }
+  .j-bool   { color:#ff7b72; }
+  .j-null   { color:var(--text-dim); }
 
-  .note-item { padding:10px 12px;background:var(--surface2);border-radius:6px;margin-bottom:8px;font-size:12px;line-height:1.5; }
-  .note-item:last-child { margin-bottom:0; }
-  .note-meta { font-size:10px;color:var(--text-dim);font-family:var(--mono);margin-bottom:4px; }
-  .note-content { color:var(--text-muted); }
-
-  .custom-fields-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px; }
-  .cf-item { display:flex;flex-direction:column;gap:3px; }
-  .cf-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim); }
-  .cf-value { font-size:12px;color:var(--text);font-family:var(--mono); }
+  /* Monitoring details callout */
+  .mon-details { background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;margin-bottom:10px; }
+  .mon-details-title { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--yellow);margin-bottom:6px; }
+  .mon-detail-row { display:flex;gap:8px;margin-bottom:4px;font-size:12px; }
+  .mon-detail-row:last-child { margin-bottom:0; }
+  .mon-detail-key { font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap;padding-top:2px;min-width:90px; }
+  .mon-detail-val { color:var(--text);font-family:var(--mono);font-size:11px;word-break:break-all; }
+  .mon-detail-val.url { color:var(--accent); }
+  .mon-detail-val.error { color:var(--red); }
 
   .no-selection { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:10px;text-align:center;padding:40px; }
   .no-selection-icon { font-size:34px;opacity:.2; }
@@ -190,7 +195,7 @@
   <div class="header-logo">OA</div>
   <div class="header-title">Outage Analyzer</div>
   <span class="header-team">Platform Engineering</span>
-  <div class="header-sub">v0.5</div>
+  <div class="header-sub">v0.6</div>
 </div>
 
 <div class="layout">
@@ -248,7 +253,7 @@ const CONVERT_RE = /([a-z0-9\-]+\.convertlanguage\.com)/i;
 
 let pdKey = '';
 let incidents = [];
-let activeIframeAction = null; // 'vmstate' | 'status' | null
+let activeIframeAction = null;
 
 function pdFetch(path) {
   const url = encodeURIComponent(`${PD_BASE}${path}`);
@@ -286,8 +291,8 @@ async function loadIncidents() {
   const hours     = parseInt(document.getElementById('filter-range').value);
   const since     = new Date(Date.now() - hours * 3600000).toISOString();
   const statuses  = statusVal.split(',').map(s => `statuses[]=${s}`).join('&');
-  const list = document.getElementById('incident-list');
-  list.innerHTML = `<div class="loading-row"><div class="spinner"></div>Fetching PE incidents…</div>`;
+  const list      = document.getElementById('incident-list');
+  list.innerHTML  = `<div class="loading-row"><div class="spinner"></div>Fetching PE incidents…</div>`;
   try {
     const data = await pdFetch(`/incidents?${statuses}&since=${since}&limit=100&sort_by=created_at:desc&team_ids[]=${PE_TEAM}`);
     incidents = data.incidents || [];
@@ -327,8 +332,9 @@ async function selectIncident(idx) {
   document.querySelectorAll('.incident-item').forEach(el => el.classList.remove('selected'));
   document.querySelectorAll('.incident-item')[idx + 1]?.classList.add('selected');
   activeIframeAction = null;
+  window._tsHost = null;
 
-  const inc = incidents[idx];
+  const inc  = incidents[idx];
   const main = document.getElementById('main-panel');
 
   main.innerHTML = `
@@ -353,22 +359,21 @@ async function selectIncident(idx) {
   `;
 
   try {
-    const [alertsData, logData, notesData, cfData] = await Promise.all([
+    const [alertsData, logData] = await Promise.all([
       pdFetch(`/incidents/${inc.id}/alerts?limit=25&include[]=body`),
-      pdFetch(`/incidents/${inc.id}/log_entries?limit=50&include[]=channel`),
-      pdFetch(`/incidents/${inc.id}/notes`),
-      pdFetch(`/incidents/${inc.id}/custom_fields/values`).catch(() => ({ custom_fields: [] }))
+      pdFetch(`/incidents/${inc.id}/log_entries?limit=50&include[]=channel`)
     ]);
 
-    const alerts       = alertsData.alerts     || [];
-    const logEntries   = logData.log_entries   || [];
-    const notes        = notesData.notes       || [];
-    const customFields = cfData.custom_fields  || [];
+    const alerts     = alertsData.alerts     || [];
+    const logEntries = logData.log_entries   || [];
 
-    // Detect convertlanguage host
-    const convertHost = detectConvertHost(inc, alerts);
+    // Extract event payloads from log entries (notify_log_entry type has channel.body)
+    const eventPayloads = extractEventPayloads(logEntries);
 
-    renderDetail(inc, alerts, logEntries, notes, customFields, convertHost);
+    // Detect convertlanguage host — also scan event payloads
+    const convertHost = detectConvertHost(inc, alerts, eventPayloads);
+
+    renderDetail(inc, alerts, eventPayloads, convertHost);
 
     document.getElementById('action-label').textContent = `Ready · ${escHtml(inc.service?.summary || '—')} · ${fmtTime(inc.created_at)}`;
     const btn = document.getElementById('btn-analyze');
@@ -379,15 +384,39 @@ async function selectIncident(idx) {
   }
 }
 
+// ── Extract event payloads from log entries ───────────────────────────────────
+function extractEventPayloads(logEntries) {
+  const payloads = [];
+  for (const entry of logEntries) {
+    // Log entries with channel contain the raw event API payload
+    const ch = entry.channel;
+    if (!ch) continue;
+    const body = ch.body || ch.details || ch.cef_details || ch;
+    if (body && typeof body === 'object' && Object.keys(body).length > 0) {
+      payloads.push({
+        type: entry.type,
+        time: entry.created_at,
+        summary: ch.summary || entry.summary || '',
+        body: body
+      });
+    }
+  }
+  return payloads;
+}
+
 // ── Detect convertlanguage host ───────────────────────────────────────────────
-function detectConvertHost(inc, alerts) {
+function detectConvertHost(inc, alerts, payloads) {
   // Search title
   let m = inc.title.match(CONVERT_RE);
   if (m) return m[1];
-
-  // Search all alert fields recursively
+  // Search alerts
   for (const a of alerts) {
     const found = searchForConvert(a);
+    if (found) return found;
+  }
+  // Search event payloads
+  for (const p of payloads) {
+    const found = searchForConvert(p.body);
     if (found) return found;
   }
   return null;
@@ -408,11 +437,43 @@ function searchForConvert(obj, depth = 0) {
   return null;
 }
 
+// ── Parse monitoring details string ──────────────────────────────────────────
+function parseMonDetails(detailsStr) {
+  if (!detailsStr || typeof detailsStr !== 'string') return null;
+  const result = {};
+
+  // Task Name / URL
+  const taskMatch = detailsStr.match(/Task Name\s*->\s*(\S+)/i);
+  if (taskMatch) result.url = taskMatch[1];
+
+  // Response code
+  const codeMatch = detailsStr.match(/Error Code[:\s]+(\d+)/i) || detailsStr.match(/RESPONSE->\s*[^;]*?(\d{3})/);
+  if (codeMatch) result.errorCode = codeMatch[1];
+
+  // Reason
+  const reasonMatch = detailsStr.match(/Reason[:\s]+([^\n.]+)/i);
+  if (reasonMatch) result.reason = reasonMatch[1].trim();
+
+  // Duration
+  const durMatch = detailsStr.match(/Actual duration[:\s]+([\d.]+ \w+)/i) || detailsStr.match(/Duration[:\s]+([\d.]+\w*)/i);
+  if (durMatch) result.duration = durMatch[1];
+
+  // Monitoring location
+  const locMatch = detailsStr.match(/Monitoring location[:\s]+(\w+)/i);
+  if (locMatch) result.location = locMatch[1];
+
+  // Timestamp
+  const tsMatch = detailsStr.match(/at ([\d\/\s:APM]+)/i);
+  if (tsMatch) result.timestamp = tsMatch[1].trim();
+
+  return Object.keys(result).length ? result : null;
+}
+
 // ── Render detail ─────────────────────────────────────────────────────────────
-function renderDetail(inc, alerts, logEntries, notes, customFields, convertHost) {
+function renderDetail(inc, alerts, eventPayloads, convertHost) {
   const body = document.getElementById('main-body');
 
-  // TServer Actions section
+  // TServer section
   const tserverHtml = buildTServerSection(convertHost);
 
   // Overview
@@ -428,9 +489,9 @@ function renderDetail(inc, alerts, logEntries, notes, customFields, convertHost)
     </div>
   `;
 
-  // Alerts
+  // Alerts with event payloads
   const alertsHtml = alerts.length ? alerts.map((a, ai) => {
-    const details = a.body?.details || {};
+    const details    = a.body?.details || {};
     const detailKeys = Object.keys(details).filter(k => details[k] && String(details[k]).length < 400);
     const detailGrid = detailKeys.map(k => `
       <div class="alert-detail-item">
@@ -438,6 +499,39 @@ function renderDetail(inc, alerts, logEntries, notes, customFields, convertHost)
         <div class="alert-detail-value">${escHtml(String(details[k]))}</div>
       </div>
     `).join('');
+
+    // Find matching event payload(s) for this alert
+    const matchingPayloads = eventPayloads.filter(p =>
+      p.summary && (p.summary.includes(a.summary) || p.summary.includes(a.alert_key || ''))
+    );
+    // Also include any payload whose body contains useful details
+    const allPayloads = matchingPayloads.length ? matchingPayloads : eventPayloads.slice(0, 1);
+
+    const payloadSections = allPayloads.map((p, pi) => {
+      // Try to parse monitoring details from body.details string
+      const detailsStr = p.body?.details || p.body?.description || '';
+      const monParsed  = parseMonDetails(detailsStr);
+
+      const monCallout = monParsed ? `
+        <div class="mon-details">
+          <div class="mon-details-title">📡 Monitoring Event Details</div>
+          ${monParsed.url       ? `<div class="mon-detail-row"><div class="mon-detail-key">Task URL</div><div class="mon-detail-val url">${escHtml(monParsed.url)}</div></div>` : ''}
+          ${monParsed.errorCode ? `<div class="mon-detail-row"><div class="mon-detail-key">Error Code</div><div class="mon-detail-val error">${escHtml(monParsed.errorCode)}</div></div>` : ''}
+          ${monParsed.reason    ? `<div class="mon-detail-row"><div class="mon-detail-key">Reason</div><div class="mon-detail-val error">${escHtml(monParsed.reason)}</div></div>` : ''}
+          ${monParsed.duration  ? `<div class="mon-detail-row"><div class="mon-detail-key">Duration</div><div class="mon-detail-val">${escHtml(monParsed.duration)}</div></div>` : ''}
+          ${monParsed.location  ? `<div class="mon-detail-row"><div class="mon-detail-key">Location</div><div class="mon-detail-val">${escHtml(monParsed.location)}</div></div>` : ''}
+          ${monParsed.timestamp ? `<div class="mon-detail-row"><div class="mon-detail-key">Timestamp</div><div class="mon-detail-val">${escHtml(monParsed.timestamp)}</div></div>` : ''}
+        </div>
+      ` : '';
+
+      return `
+        ${monCallout}
+        <div class="event-payload-wrap">
+          <div class="event-payload-label">Event API Payload ${allPayloads.length > 1 ? `(${pi+1}/${allPayloads.length})` : ''} · ${fmtTime(p.time)}</div>
+          <div class="event-payload-box">${syntaxHighlight(p.body)}</div>
+        </div>
+      `;
+    }).join('');
 
     return `
       <div class="alert-card">
@@ -455,50 +549,16 @@ function renderDetail(inc, alerts, logEntries, notes, customFields, convertHost)
             <div class="alert-detail-item"><div class="alert-detail-label">Alert Key</div><div class="alert-detail-value">${escHtml(a.alert_key || a.dedup_key || '—')}</div></div>
             ${detailGrid}
           </div>
+          ${payloadSections || '<div class="muted">No event payload available.</div>'}
         </div>
       </div>
     `;
   }).join('') : '<div class="muted">No alerts found.</div>';
 
-  // Timeline
-  const timelineHtml = logEntries.length ? logEntries.slice(0, 30).map(e => `
-    <div class="timeline-item">
-      <div class="timeline-dot ${dotClass(e.type)}"></div>
-      <div class="timeline-content">
-        <div class="timeline-type">${fmtLogType(e.type)}</div>
-        <div class="timeline-detail">${escHtml(e.channel?.summary || e.summary || '')}</div>
-      </div>
-      <div class="timeline-time">${fmtTime(e.created_at)}</div>
-    </div>
-  `).join('') : '<div class="muted">No timeline events.</div>';
-
-  // Notes
-  const notesHtml = notes.length ? notes.map(n => `
-    <div class="note-item">
-      <div class="note-meta">${escHtml(n.user?.summary || 'Unknown')} · ${fmtTime(n.created_at)}</div>
-      <div class="note-content">${escHtml(n.content)}</div>
-    </div>
-  `).join('') : '<div class="muted">No notes on this incident.</div>';
-
-  // Custom fields
-  const cfHtml = customFields.length ? `
-    <div class="custom-fields-grid">
-      ${customFields.map(f => `
-        <div class="cf-item">
-          <div class="cf-label">${escHtml(f.name || f.field?.display_name || '—')}</div>
-          <div class="cf-value">${escHtml(f.value !== null && f.value !== undefined ? String(f.value) : 'N/A')}</div>
-        </div>
-      `).join('')}
-    </div>
-  ` : '<div class="muted">No custom fields set.</div>';
-
   body.innerHTML = `
     ${tserverHtml}
-    ${makeSection('overview', 'Overview',          overviewHtml, null,           true)}
-    ${makeSection('alerts',   'Alerts',             alertsHtml,   alerts.length,  true)}
-    ${makeSection('timeline', 'Incident Timeline',  `<div class="timeline">${timelineHtml}</div>`, logEntries.length, false)}
-    ${makeSection('notes',    'Notes',              notesHtml,    notes.length,   false)}
-    ${makeSection('cf',       'Custom Fields',      cfHtml,       null,           false)}
+    ${makeSection('overview', 'Overview', overviewHtml, null, true)}
+    ${makeSection('alerts',   'Alerts',   alertsHtml,   alerts.length, true)}
   `;
 
   // Wire section toggles
@@ -510,26 +570,22 @@ function renderDetail(inc, alerts, logEntries, notes, customFields, convertHost)
     });
   });
 
-  // Wire TServer manual input if present
+  // Wire manual host input
   const manualInput = document.getElementById('ts-manual-input');
   if (manualInput) {
-    manualInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') applyManualHost(manualInput.value.trim());
-    });
-    document.getElementById('ts-manual-btn')?.addEventListener('click', () => {
-      applyManualHost(manualInput.value.trim());
-    });
+    manualInput.addEventListener('keydown', e => { if (e.key === 'Enter') applyManualHost(manualInput.value.trim()); });
+    document.getElementById('ts-manual-btn')?.addEventListener('click', () => applyManualHost(manualInput.value.trim()));
   }
 }
 
-// ── TServer section builder ───────────────────────────────────────────────────
+// ── TServer section ───────────────────────────────────────────────────────────
 function buildTServerSection(host) {
   const hostRow = host
     ? `<div class="tserver-host-row">
          <div class="tserver-host-label">🟢 Auto-detected:</div>
          <div class="tserver-host-val">${escHtml(host)}</div>
        </div>`
-    : `<div class="tserver-host-row" style="flex-wrap:wrap;gap:6px;">
+    : `<div class="tserver-host-row">
          <div class="tserver-host-label">⚠️ Not detected — enter manually:</div>
          <input type="text" id="ts-manual-input" class="tserver-host-manual" placeholder="client.convertlanguage.com">
          <button class="btn btn-sm" id="ts-manual-btn">Set</button>
@@ -555,39 +611,26 @@ function buildTServerSection(host) {
 
 function applyManualHost(host) {
   if (!host) return;
-  if (!host.includes('.convertlanguage.com')) {
-    host = host + '.convertlanguage.com';
-  }
-  // Update the host display
-  const row = document.querySelector('.tserver-host-row');
-  if (row) {
-    row.innerHTML = `<div class="tserver-host-label">✏️ Manual:</div><div class="tserver-host-val">${escHtml(host)}</div>`;
-  }
-  // Store host and show action buttons
-  document.getElementById('tserver-actions').style.display = '';
-  document.getElementById('tserver-actions').dataset.host = host;
-  // Also update buttons to use this host
+  if (!host.includes('.convertlanguage.com')) host += '.convertlanguage.com';
   window._tsHost = host;
+  const row = document.querySelector('.tserver-host-row');
+  if (row) row.innerHTML = `<div class="tserver-host-label">✏️ Manual:</div><div class="tserver-host-val">${escHtml(host)}</div>`;
+  document.getElementById('tserver-actions').style.display = '';
 }
 
 window.loadTServerIframe = function(action) {
-  // Determine host
-  const actionsEl = document.getElementById('tserver-actions');
-  const host = window._tsHost || actionsEl?.dataset?.host || document.querySelector('.tserver-host-val')?.textContent?.trim();
+  const host = window._tsHost || document.querySelector('.tserver-host-val')?.textContent?.trim();
   if (!host) return;
 
-  // Toggle: if same action active, close it
   if (activeIframeAction === action) {
     activeIframeAction = null;
     document.getElementById('tserver-iframe-container').innerHTML = '';
-    document.getElementById(`btn-vmstate`).classList.remove('active');
-    document.getElementById(`btn-status`).classList.remove('active');
+    document.getElementById('btn-vmstate').classList.remove('active');
+    document.getElementById('btn-status').classList.remove('active');
     return;
   }
 
   activeIframeAction = action;
-
-  // Update button states
   document.getElementById('btn-vmstate').classList.toggle('active', action === 'vmstate');
   document.getElementById('btn-status').classList.toggle('active', action === 'status');
 
@@ -619,6 +662,23 @@ function makeSection(id, title, content, count, defaultOpen) {
   `;
 }
 
+// ── Syntax highlight JSON ─────────────────────────────────────────────────────
+function syntaxHighlight(obj) {
+  const json = JSON.stringify(obj, null, 2);
+  return escHtml(json).replace(
+    /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+    match => {
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) return `<span class="j-key">${match}</span>`;
+        return `<span class="j-str">${match}</span>`;
+      }
+      if (/true|false/.test(match)) return `<span class="j-bool">${match}</span>`;
+      if (/null/.test(match))       return `<span class="j-null">${match}</span>`;
+      return `<span class="j-num">${match}</span>`;
+    }
+  );
+}
+
 function proceedToAnalysis(inc, alerts) {
   alert(`Phase 2 coming up.\n\nIncident: ${inc.title}\nService: ${inc.service?.summary}\nTriggered: ${fmtTime(inc.created_at)}\n\nNext: TServer log ingestion + Claude API call.`);
 }
@@ -626,8 +686,8 @@ function proceedToAnalysis(inc, alerts) {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function showSidebarError(msg) {
   const list = document.getElementById('incident-list');
-  const div = document.createElement('div');
-  div.className = 'error-bar';
+  const div  = document.createElement('div');
+  div.className   = 'error-bar';
   div.textContent = msg;
   list.prepend(div);
   setTimeout(() => div.remove(), 7000);
@@ -636,14 +696,6 @@ function showSidebarError(msg) {
 function badgeClass(s) {
   return { triggered:'badge-triggered', acknowledged:'badge-acknowledged', resolved:'badge-resolved' }[s] || 'badge-triggered';
 }
-function dotClass(type) {
-  if (!type) return '';
-  const t = type.toLowerCase();
-  if (t.includes('trigger')) return 'trigger';
-  if (t.includes('acknowledge')) return 'ack';
-  if (t.includes('resolve')) return 'resolve';
-  return 'notify';
-}
 function fmtTime(iso) {
   if (!iso) return '—';
   return new Date(iso).toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:false });
@@ -651,12 +703,9 @@ function fmtTime(iso) {
 function fmtDuration(start, end) {
   if (!start) return '—';
   const ms = (end ? new Date(end) : new Date()) - new Date(start);
-  const h = Math.floor(ms / 3600000);
-  const m = Math.floor((ms % 3600000) / 60000);
+  const h  = Math.floor(ms / 3600000);
+  const m  = Math.floor((ms % 3600000) / 60000);
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-function fmtLogType(type) {
-  return (type || 'Event').replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 function escHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
