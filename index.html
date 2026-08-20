@@ -56,6 +56,11 @@
   .btn-ghost { background:var(--surface2);color:var(--text);border:1px solid var(--border); }
   .btn-ghost:hover { background:var(--border);opacity:1; }
   .btn-sm { font-size:11px;padding:5px 10px; }
+  .btn-danger { background:#f8514922;color:var(--red);border:1px solid #f8514940; }
+  .btn-danger:hover { background:#f8514933;opacity:1; }
+
+  .saved-key-row { display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:var(--green); }
+  .saved-key-row span { flex:1;font-family:var(--mono); }
 
   .incident-list { flex:1;overflow-y:auto;padding:6px 0; }
   .incident-list::-webkit-scrollbar { width:4px; }
@@ -103,7 +108,6 @@
   .main-body::-webkit-scrollbar { width:4px; }
   .main-body::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
 
-  /* Collapsible sections */
   .section { background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden; }
   .section-header { padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--surface2);user-select:none;transition:background .1s; }
   .section-header:hover { background:var(--border2); }
@@ -114,7 +118,6 @@
   .section-body { padding:12px 14px;display:none; }
   .section-body.open { display:block; }
 
-  /* Overview */
   .overview-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px; }
   .overview-item { display:flex;flex-direction:column;gap:3px; }
   .overview-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim); }
@@ -122,7 +125,6 @@
   .overview-value a { color:var(--accent);text-decoration:none; }
   .overview-value a:hover { text-decoration:underline; }
 
-  /* TServer Actions */
   .tserver-section { background:var(--surface);border:1px solid var(--accent)44;border-radius:8px;overflow:hidden; }
   .tserver-header { padding:10px 14px;display:flex;align-items:center;gap:8px;background:#1f6feb18; }
   .tserver-title { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);flex:1; }
@@ -139,7 +141,6 @@
   .tserver-iframe-wrap iframe { width:100%;height:480px;border:none;display:block; }
   .tserver-vpn-note { font-size:10px;color:var(--text-dim);margin-top:6px;font-family:var(--mono); }
 
-  /* Alerts */
   .alert-card { border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:10px; }
   .alert-card:last-child { margin-bottom:0; }
   .alert-card-header { padding:8px 12px;background:var(--surface2);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none; }
@@ -152,31 +153,23 @@
   .alert-detail-label { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim); }
   .alert-detail-value { font-size:11px;color:var(--text-muted);font-family:var(--mono);word-break:break-all; }
 
-  /* Event payload */
-  .event-payload-wrap { margin-top:10px; }
-  .event-payload-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:6px; }
-  .event-payload-box {
-    background:var(--bg);border:1px solid var(--border2);border-radius:6px;
-    padding:10px 12px;font-family:var(--mono);font-size:11px;line-height:1.6;
-    white-space:pre-wrap;word-break:break-all;max-height:320px;overflow-y:auto;
-    scrollbar-width:thin;scrollbar-color:var(--border) transparent;
-  }
-  /* JSON syntax highlight */
-  .j-key    { color:#79c0ff; }
-  .j-str    { color:#a5d6ff; }
-  .j-num    { color:#f2cc60; }
-  .j-bool   { color:#ff7b72; }
-  .j-null   { color:var(--text-dim); }
-
-  /* Monitoring details callout */
   .mon-details { background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;margin-bottom:10px; }
-  .mon-details-title { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--yellow);margin-bottom:6px; }
-  .mon-detail-row { display:flex;gap:8px;margin-bottom:4px;font-size:12px; }
+  .mon-details-title { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--yellow);margin-bottom:8px; }
+  .mon-detail-row { display:flex;gap:8px;margin-bottom:5px;font-size:12px; }
   .mon-detail-row:last-child { margin-bottom:0; }
-  .mon-detail-key { font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap;padding-top:2px;min-width:90px; }
+  .mon-detail-key { font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap;padding-top:2px;min-width:100px; }
   .mon-detail-val { color:var(--text);font-family:var(--mono);font-size:11px;word-break:break-all; }
   .mon-detail-val.url { color:var(--accent); }
-  .mon-detail-val.error { color:var(--red); }
+  .mon-detail-val.err { color:var(--red); }
+
+  .event-payload-wrap { margin-top:10px; }
+  .event-payload-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:6px; }
+  .event-payload-box { background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;font-family:var(--mono);font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-all;max-height:320px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent; }
+  .j-key  { color:#79c0ff; }
+  .j-str  { color:#a5d6ff; }
+  .j-num  { color:#f2cc60; }
+  .j-bool { color:#ff7b72; }
+  .j-null { color:var(--text-dim); }
 
   .no-selection { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:10px;text-align:center;padding:40px; }
   .no-selection-icon { font-size:34px;opacity:.2; }
@@ -195,7 +188,7 @@
   <div class="header-logo">OA</div>
   <div class="header-title">Outage Analyzer</div>
   <span class="header-team">Platform Engineering</span>
-  <div class="header-sub">v0.6</div>
+  <div class="header-sub">v0.7</div>
 </div>
 
 <div class="layout">
@@ -205,6 +198,10 @@
       <div class="input-row">
         <input type="password" id="pd-key" placeholder="u+xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
         <button class="btn" id="btn-connect">Connect</button>
+      </div>
+      <div id="saved-key-row" style="display:none" class="saved-key-row">
+        <span id="saved-key-label"></span>
+        <button class="btn btn-danger btn-sm" id="btn-clear-key">Clear</button>
       </div>
     </div>
     <div class="sidebar-section" id="filter-section" style="display:none">
@@ -246,15 +243,74 @@
 </div>
 
 <script>
-const PROXY   = 'https://corsproxy.io/?url=';
-const PD_BASE = 'https://api.pagerduty.com';
-const PE_TEAM = 'P3P5G66';
+const PROXY      = 'https://corsproxy.io/?url=';
+const PD_BASE    = 'https://api.pagerduty.com';
+const PE_TEAM    = 'P3P5G66';
+const LS_KEY     = 'oa_pd_api_key';
 const CONVERT_RE = /([a-z0-9\-]+\.convertlanguage\.com)/i;
 
 let pdKey = '';
 let incidents = [];
 let activeIframeAction = null;
 
+// ── API key persistence ───────────────────────────────────────────────────────
+function saveKey(key) {
+  try { localStorage.setItem(LS_KEY, key); } catch(e) {}
+}
+function loadSavedKey() {
+  try { return localStorage.getItem(LS_KEY) || ''; } catch(e) { return ''; }
+}
+function clearSavedKey() {
+  try { localStorage.removeItem(LS_KEY); } catch(e) {}
+}
+
+function showSavedKeyBadge(key) {
+  const masked = key.substring(0, 4) + '••••••••' + key.slice(-4);
+  document.getElementById('saved-key-label').textContent = '🔑 Saved: ' + masked;
+  document.getElementById('saved-key-row').style.display = '';
+}
+
+// ── Init: restore key on load ─────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = loadSavedKey();
+  if (saved) {
+    document.getElementById('pd-key').value = saved;
+    showSavedKeyBadge(saved);
+    connect(true); // auto-connect silently
+  }
+});
+
+document.getElementById('btn-clear-key').addEventListener('click', () => {
+  clearSavedKey();
+  pdKey = '';
+  document.getElementById('pd-key').value = '';
+  document.getElementById('saved-key-row').style.display = 'none';
+  document.getElementById('btn-connect').textContent = 'Connect';
+  document.getElementById('filter-section').style.display = 'none';
+  document.getElementById('incident-list').innerHTML = `
+    <div class="empty-state"><div class="empty-icon">🔌</div><div class="empty-text">Enter your PagerDuty API key<br>and click Connect</div></div>
+  `;
+  document.getElementById('main-panel').innerHTML = `
+    <div class="no-selection"><div class="no-selection-icon">📋</div><div class="no-selection-title">No incident selected</div><div class="no-selection-sub">Connect to PagerDuty, then select a PE incident to begin</div></div>
+  `;
+});
+
+// ── Connect ───────────────────────────────────────────────────────────────────
+document.getElementById('btn-connect').addEventListener('click', () => connect(false));
+document.getElementById('pd-key').addEventListener('keydown', e => { if (e.key === 'Enter') connect(false); });
+
+function connect(silent = false) {
+  const key = document.getElementById('pd-key').value.trim();
+  if (!key) return;
+  pdKey = key;
+  saveKey(key);
+  showSavedKeyBadge(key);
+  document.getElementById('btn-connect').textContent = '✓';
+  document.getElementById('filter-section').style.display = '';
+  loadIncidents();
+}
+
+// ── PD fetch ──────────────────────────────────────────────────────────────────
 function pdFetch(path) {
   const url = encodeURIComponent(`${PD_BASE}${path}`);
   return fetch(`${PROXY}${url}`, {
@@ -266,19 +322,6 @@ function pdFetch(path) {
     if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
     return r.json();
   });
-}
-
-// ── Connect ───────────────────────────────────────────────────────────────────
-document.getElementById('btn-connect').addEventListener('click', connect);
-document.getElementById('pd-key').addEventListener('keydown', e => { if (e.key === 'Enter') connect(); });
-
-function connect() {
-  const key = document.getElementById('pd-key').value.trim();
-  if (!key) return;
-  pdKey = key;
-  document.getElementById('btn-connect').textContent = '✓';
-  document.getElementById('filter-section').style.display = '';
-  loadIncidents();
 }
 
 // ── Load incidents ────────────────────────────────────────────────────────────
@@ -359,21 +402,25 @@ async function selectIncident(idx) {
   `;
 
   try {
-    const [alertsData, logData] = await Promise.all([
-      pdFetch(`/incidents/${inc.id}/alerts?limit=25&include[]=body`),
-      pdFetch(`/incidents/${inc.id}/log_entries?limit=50&include[]=channel`)
-    ]);
+    // Fetch alerts first
+    const alertsData = await pdFetch(`/incidents/${inc.id}/alerts?limit=25&include[]=body`);
+    const alerts = alertsData.alerts || [];
 
-    const alerts     = alertsData.alerts     || [];
-    const logEntries = logData.log_entries   || [];
+    // For each alert, fetch its log entries (this is where the Events API payload lives)
+    const alertLogPromises = alerts.map(a =>
+      pdFetch(`/alerts/${a.id}/log_entries?include[]=channel`).catch(() => ({ log_entries: [] }))
+    );
+    const alertLogs = await Promise.all(alertLogPromises);
 
-    // Extract event payloads from log entries (notify_log_entry type has channel.body)
-    const eventPayloads = extractEventPayloads(logEntries);
+    // Attach log entries to each alert
+    alerts.forEach((a, i) => {
+      a._logEntries = alertLogs[i]?.log_entries || [];
+    });
 
-    // Detect convertlanguage host — also scan event payloads
-    const convertHost = detectConvertHost(inc, alerts, eventPayloads);
+    // Detect convertlanguage host
+    const convertHost = detectConvertHost(inc, alerts);
 
-    renderDetail(inc, alerts, eventPayloads, convertHost);
+    renderDetail(inc, alerts, convertHost);
 
     document.getElementById('action-label').textContent = `Ready · ${escHtml(inc.service?.summary || '—')} · ${fmtTime(inc.created_at)}`;
     const btn = document.getElementById('btn-analyze');
@@ -384,46 +431,19 @@ async function selectIncident(idx) {
   }
 }
 
-// ── Extract event payloads from log entries ───────────────────────────────────
-function extractEventPayloads(logEntries) {
-  const payloads = [];
-  for (const entry of logEntries) {
-    // Log entries with channel contain the raw event API payload
-    const ch = entry.channel;
-    if (!ch) continue;
-    const body = ch.body || ch.details || ch.cef_details || ch;
-    if (body && typeof body === 'object' && Object.keys(body).length > 0) {
-      payloads.push({
-        type: entry.type,
-        time: entry.created_at,
-        summary: ch.summary || entry.summary || '',
-        body: body
-      });
-    }
-  }
-  return payloads;
-}
-
 // ── Detect convertlanguage host ───────────────────────────────────────────────
-function detectConvertHost(inc, alerts, payloads) {
-  // Search title
+function detectConvertHost(inc, alerts) {
   let m = inc.title.match(CONVERT_RE);
   if (m) return m[1];
-  // Search alerts
   for (const a of alerts) {
     const found = searchForConvert(a);
-    if (found) return found;
-  }
-  // Search event payloads
-  for (const p of payloads) {
-    const found = searchForConvert(p.body);
     if (found) return found;
   }
   return null;
 }
 
 function searchForConvert(obj, depth = 0) {
-  if (depth > 6 || !obj) return null;
+  if (depth > 8 || !obj) return null;
   if (typeof obj === 'string') {
     const m = obj.match(CONVERT_RE);
     return m ? m[1] : null;
@@ -438,45 +458,26 @@ function searchForConvert(obj, depth = 0) {
 }
 
 // ── Parse monitoring details string ──────────────────────────────────────────
-function parseMonDetails(detailsStr) {
-  if (!detailsStr || typeof detailsStr !== 'string') return null;
-  const result = {};
-
-  // Task Name / URL
-  const taskMatch = detailsStr.match(/Task Name\s*->\s*(\S+)/i);
-  if (taskMatch) result.url = taskMatch[1];
-
-  // Response code
-  const codeMatch = detailsStr.match(/Error Code[:\s]+(\d+)/i) || detailsStr.match(/RESPONSE->\s*[^;]*?(\d{3})/);
-  if (codeMatch) result.errorCode = codeMatch[1];
-
-  // Reason
-  const reasonMatch = detailsStr.match(/Reason[:\s]+([^\n.]+)/i);
-  if (reasonMatch) result.reason = reasonMatch[1].trim();
-
-  // Duration
-  const durMatch = detailsStr.match(/Actual duration[:\s]+([\d.]+ \w+)/i) || detailsStr.match(/Duration[:\s]+([\d.]+\w*)/i);
-  if (durMatch) result.duration = durMatch[1];
-
-  // Monitoring location
-  const locMatch = detailsStr.match(/Monitoring location[:\s]+(\w+)/i);
-  if (locMatch) result.location = locMatch[1];
-
-  // Timestamp
-  const tsMatch = detailsStr.match(/at ([\d\/\s:APM]+)/i);
-  if (tsMatch) result.timestamp = tsMatch[1].trim();
-
-  return Object.keys(result).length ? result : null;
+function parseMonDetails(str) {
+  if (!str || typeof str !== 'string') return null;
+  const r = {};
+  const taskMatch = str.match(/Task Name\s*->\s*(\S+)/i);
+  if (taskMatch) r.url = taskMatch[1];
+  const codeMatch = str.match(/Error Code[:\s]+(\d+)/i) || str.match(/RESPONSE->\s*[^\n]*?[^0-9](\d{3})[^0-9]/);
+  if (codeMatch) r.errorCode = codeMatch[1];
+  const reasonMatch = str.match(/Reason[:\s]+([^\n]+)/i);
+  if (reasonMatch) r.reason = reasonMatch[1].trim();
+  const durMatch = str.match(/Actual duration[:\s]+([\d.]+ ?\w+)/i);
+  if (durMatch) r.duration = durMatch[1];
+  const locMatch = str.match(/Monitoring location[:\s]+(\w+)/i);
+  if (locMatch) r.location = locMatch[1];
+  return Object.keys(r).length ? r : null;
 }
 
 // ── Render detail ─────────────────────────────────────────────────────────────
-function renderDetail(inc, alerts, eventPayloads, convertHost) {
+function renderDetail(inc, alerts, convertHost) {
   const body = document.getElementById('main-body');
 
-  // TServer section
-  const tserverHtml = buildTServerSection(convertHost);
-
-  // Overview
   const overviewHtml = `
     <div class="overview-grid">
       <div class="overview-item"><div class="overview-label">Incident #</div><div class="overview-value">${inc.incident_number}</div></div>
@@ -489,49 +490,48 @@ function renderDetail(inc, alerts, eventPayloads, convertHost) {
     </div>
   `;
 
-  // Alerts with event payloads
   const alertsHtml = alerts.length ? alerts.map((a, ai) => {
+    // Find the trigger log entry on this alert's log entries
+    const triggerEntry = a._logEntries.find(e =>
+      e.type && (e.type.includes('trigger') || e.type.includes('notify'))
+    ) || a._logEntries[0];
+
+    const payload = triggerEntry?.channel?.body || triggerEntry?.channel || null;
+
+    // Parse monitoring details from multiple possible locations
+    const detailsStr = payload?.details || payload?.description ||
+                       a.body?.details || a.body?.description || '';
+    const monParsed  = parseMonDetails(typeof detailsStr === 'string' ? detailsStr : JSON.stringify(detailsStr));
+
+    const monCallout = monParsed ? `
+      <div class="mon-details">
+        <div class="mon-details-title">📡 Monitoring Event Details</div>
+        ${monParsed.url       ? `<div class="mon-detail-row"><div class="mon-detail-key">Task URL</div><div class="mon-detail-val url">${escHtml(monParsed.url)}</div></div>` : ''}
+        ${monParsed.errorCode ? `<div class="mon-detail-row"><div class="mon-detail-key">Error Code</div><div class="mon-detail-val err">${escHtml(monParsed.errorCode)}</div></div>` : ''}
+        ${monParsed.reason    ? `<div class="mon-detail-row"><div class="mon-detail-key">Reason</div><div class="mon-detail-val err">${escHtml(monParsed.reason)}</div></div>` : ''}
+        ${monParsed.duration  ? `<div class="mon-detail-row"><div class="mon-detail-key">Duration</div><div class="mon-detail-val">${escHtml(monParsed.duration)}</div></div>` : ''}
+        ${monParsed.location  ? `<div class="mon-detail-row"><div class="mon-detail-key">Location</div><div class="mon-detail-val">${escHtml(monParsed.location)}</div></div>` : ''}
+      </div>
+    ` : '';
+
+    const payloadSection = payload ? `
+      <div class="event-payload-wrap">
+        <div class="event-payload-label">Event API Payload · ${fmtTime(triggerEntry?.created_at)}</div>
+        <div class="event-payload-box">${syntaxHighlight(payload)}</div>
+      </div>
+    ` : '<div class="muted" style="margin-top:8px;">No event payload found on alert log entries.</div>';
+
+    // Standard alert details from body
     const details    = a.body?.details || {};
-    const detailKeys = Object.keys(details).filter(k => details[k] && String(details[k]).length < 400);
+    const detailKeys = typeof details === 'object'
+      ? Object.keys(details).filter(k => details[k] && String(details[k]).length < 400)
+      : [];
     const detailGrid = detailKeys.map(k => `
       <div class="alert-detail-item">
         <div class="alert-detail-label">${escHtml(k)}</div>
         <div class="alert-detail-value">${escHtml(String(details[k]))}</div>
       </div>
     `).join('');
-
-    // Find matching event payload(s) for this alert
-    const matchingPayloads = eventPayloads.filter(p =>
-      p.summary && (p.summary.includes(a.summary) || p.summary.includes(a.alert_key || ''))
-    );
-    // Also include any payload whose body contains useful details
-    const allPayloads = matchingPayloads.length ? matchingPayloads : eventPayloads.slice(0, 1);
-
-    const payloadSections = allPayloads.map((p, pi) => {
-      // Try to parse monitoring details from body.details string
-      const detailsStr = p.body?.details || p.body?.description || '';
-      const monParsed  = parseMonDetails(detailsStr);
-
-      const monCallout = monParsed ? `
-        <div class="mon-details">
-          <div class="mon-details-title">📡 Monitoring Event Details</div>
-          ${monParsed.url       ? `<div class="mon-detail-row"><div class="mon-detail-key">Task URL</div><div class="mon-detail-val url">${escHtml(monParsed.url)}</div></div>` : ''}
-          ${monParsed.errorCode ? `<div class="mon-detail-row"><div class="mon-detail-key">Error Code</div><div class="mon-detail-val error">${escHtml(monParsed.errorCode)}</div></div>` : ''}
-          ${monParsed.reason    ? `<div class="mon-detail-row"><div class="mon-detail-key">Reason</div><div class="mon-detail-val error">${escHtml(monParsed.reason)}</div></div>` : ''}
-          ${monParsed.duration  ? `<div class="mon-detail-row"><div class="mon-detail-key">Duration</div><div class="mon-detail-val">${escHtml(monParsed.duration)}</div></div>` : ''}
-          ${monParsed.location  ? `<div class="mon-detail-row"><div class="mon-detail-key">Location</div><div class="mon-detail-val">${escHtml(monParsed.location)}</div></div>` : ''}
-          ${monParsed.timestamp ? `<div class="mon-detail-row"><div class="mon-detail-key">Timestamp</div><div class="mon-detail-val">${escHtml(monParsed.timestamp)}</div></div>` : ''}
-        </div>
-      ` : '';
-
-      return `
-        ${monCallout}
-        <div class="event-payload-wrap">
-          <div class="event-payload-label">Event API Payload ${allPayloads.length > 1 ? `(${pi+1}/${allPayloads.length})` : ''} · ${fmtTime(p.time)}</div>
-          <div class="event-payload-box">${syntaxHighlight(p.body)}</div>
-        </div>
-      `;
-    }).join('');
 
     return `
       <div class="alert-card">
@@ -549,19 +549,19 @@ function renderDetail(inc, alerts, eventPayloads, convertHost) {
             <div class="alert-detail-item"><div class="alert-detail-label">Alert Key</div><div class="alert-detail-value">${escHtml(a.alert_key || a.dedup_key || '—')}</div></div>
             ${detailGrid}
           </div>
-          ${payloadSections || '<div class="muted">No event payload available.</div>'}
+          ${monCallout}
+          ${payloadSection}
         </div>
       </div>
     `;
   }).join('') : '<div class="muted">No alerts found.</div>';
 
   body.innerHTML = `
-    ${tserverHtml}
+    ${buildTServerSection(convertHost)}
     ${makeSection('overview', 'Overview', overviewHtml, null, true)}
     ${makeSection('alerts',   'Alerts',   alertsHtml,   alerts.length, true)}
   `;
 
-  // Wire section toggles
   body.querySelectorAll('.section-header').forEach(h => {
     h.addEventListener('click', () => {
       const id = h.dataset.section;
@@ -570,7 +570,6 @@ function renderDetail(inc, alerts, eventPayloads, convertHost) {
     });
   });
 
-  // Wire manual host input
   const manualInput = document.getElementById('ts-manual-input');
   if (manualInput) {
     manualInput.addEventListener('keydown', e => { if (e.key === 'Enter') applyManualHost(manualInput.value.trim()); });
@@ -591,11 +590,11 @@ function buildTServerSection(host) {
          <button class="btn btn-sm" id="ts-manual-btn">Set</button>
        </div>`;
 
+  if (host) window._tsHost = host;
+
   return `
-    <div class="tserver-section" id="tserver-section">
-      <div class="tserver-header">
-        <div class="tserver-title">⚡ TServer Actions</div>
-      </div>
+    <div class="tserver-section">
+      <div class="tserver-header"><div class="tserver-title">⚡ TServer Actions</div></div>
       <div class="tserver-body">
         ${hostRow}
         <div class="tserver-actions" id="tserver-actions" ${!host ? 'style="display:none"' : ''}>
@@ -621,7 +620,6 @@ function applyManualHost(host) {
 window.loadTServerIframe = function(action) {
   const host = window._tsHost || document.querySelector('.tserver-host-val')?.textContent?.trim();
   if (!host) return;
-
   if (activeIframeAction === action) {
     activeIframeAction = null;
     document.getElementById('tserver-iframe-container').innerHTML = '';
@@ -629,14 +627,10 @@ window.loadTServerIframe = function(action) {
     document.getElementById('btn-status').classList.remove('active');
     return;
   }
-
   activeIframeAction = action;
   document.getElementById('btn-vmstate').classList.toggle('active', action === 'vmstate');
   document.getElementById('btn-status').classList.toggle('active', action === 'status');
-
-  const mpactionid = action === 'vmstate' ? '1073741829' : '1';
-  const url = `https://${host}/?mpactionid=${mpactionid}`;
-
+  const url = `https://${host}/?mpactionid=${action === 'vmstate' ? '1073741829' : '1'}`;
   document.getElementById('tserver-iframe-container').innerHTML = `
     <div class="tserver-iframe-wrap">
       <iframe src="${escHtml(url)}" title="${action === 'vmstate' ? 'VM State' : 'TServer Status'}"></iframe>
@@ -662,19 +656,15 @@ function makeSection(id, title, content, count, defaultOpen) {
   `;
 }
 
-// ── Syntax highlight JSON ─────────────────────────────────────────────────────
 function syntaxHighlight(obj) {
   const json = JSON.stringify(obj, null, 2);
   return escHtml(json).replace(
     /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-    match => {
-      if (/^"/.test(match)) {
-        if (/:$/.test(match)) return `<span class="j-key">${match}</span>`;
-        return `<span class="j-str">${match}</span>`;
-      }
-      if (/true|false/.test(match)) return `<span class="j-bool">${match}</span>`;
-      if (/null/.test(match))       return `<span class="j-null">${match}</span>`;
-      return `<span class="j-num">${match}</span>`;
+    m => {
+      if (/^"/.test(m)) return /:$/.test(m) ? `<span class="j-key">${m}</span>` : `<span class="j-str">${m}</span>`;
+      if (/true|false/.test(m)) return `<span class="j-bool">${m}</span>`;
+      if (/null/.test(m))       return `<span class="j-null">${m}</span>`;
+      return `<span class="j-num">${m}</span>`;
     }
   );
 }
@@ -683,12 +673,10 @@ function proceedToAnalysis(inc, alerts) {
   alert(`Phase 2 coming up.\n\nIncident: ${inc.title}\nService: ${inc.service?.summary}\nTriggered: ${fmtTime(inc.created_at)}\n\nNext: TServer log ingestion + Claude API call.`);
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function showSidebarError(msg) {
   const list = document.getElementById('incident-list');
   const div  = document.createElement('div');
-  div.className   = 'error-bar';
-  div.textContent = msg;
+  div.className = 'error-bar'; div.textContent = msg;
   list.prepend(div);
   setTimeout(() => div.remove(), 7000);
 }
