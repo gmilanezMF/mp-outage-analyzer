@@ -204,6 +204,14 @@
         <button class="btn btn-danger btn-sm" id="btn-clear-key">Clear</button>
       </div>
     </div>
+    <div class="sidebar-section">
+      <label>Anthropic API Key</label>
+      <div class="input-row">
+        <input type="password" id="anthropic-key" placeholder="sk-ant-xxxxxxxxxxxx" autocomplete="off">
+        <button class="btn btn-ghost btn-sm" id="btn-save-anthropic">Save</button>
+      </div>
+      <div id="anthropic-key-status" style="font-size:10px;color:var(--text-dim);margin-top:4px;font-family:var(--mono);"></div>
+    </div>
     <div class="sidebar-section" id="gh-token-section">
       <label>GitHub Token <span style="font-weight:400;color:var(--text-dim)">(if repo is private)</span></label>
       <div class="input-row">
@@ -302,6 +310,25 @@ document.getElementById('btn-clear-key').addEventListener('click', () => {
     <div class="no-selection"><div class="no-selection-icon">📋</div><div class="no-selection-title">No incident selected</div><div class="no-selection-sub">Connect to PagerDuty, then select a PE incident to begin</div></div>
   `;
 });
+
+// ── Anthropic API key ─────────────────────────────────────────────────────────
+(function initAnthropicKey() {
+  const saved = localStorage.getItem('oa_anthropic_key') || '';
+  if (saved) {
+    document.getElementById('anthropic-key').value = saved;
+    document.getElementById('anthropic-key-status').textContent = '🔑 Saved: ' + saved.substring(0,10) + '••••';
+  }
+  document.getElementById('btn-save-anthropic').addEventListener('click', () => {
+    const t = document.getElementById('anthropic-key').value.trim();
+    if (t) {
+      localStorage.setItem('oa_anthropic_key', t);
+      document.getElementById('anthropic-key-status').textContent = '✅ Saved: ' + t.substring(0,10) + '••••';
+    } else {
+      localStorage.removeItem('oa_anthropic_key');
+      document.getElementById('anthropic-key-status').textContent = 'Cleared';
+    }
+  });
+})();
 
 // ── GitHub token ──────────────────────────────────────────────────────────────
 (function initGhToken() {
@@ -720,17 +747,23 @@ const KB_FILES  = [
   'kb/project/reference_convertlanguage_urls.json',
 ];
 
-async function fetchKB() {
+async function fetchKBFile(path) {
   const ghToken = localStorage.getItem('oa_gh_token') || '';
-  const base    = `https://raw.githubusercontent.com/${KB_REPO}/${KB_BRANCH}`;
-  const headers = ghToken ? { 'Authorization': `token ${ghToken}` } : {};
+  // Use GitHub Contents API — supports CORS + auth token properly
+  const apiUrl = `https://api.github.com/repos/${KB_REPO}/contents/${path}?ref=${KB_BRANCH}`;
+  const headers = {
+    'Accept': 'application/vnd.github.v3.raw',
+    ...(ghToken ? { 'Authorization': `token ${ghToken}` } : {})
+  };
+  const r = await fetch(apiUrl, { headers });
+  if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+  return r.text();
+}
 
+async function fetchKB() {
   const results = await Promise.all(KB_FILES.map(async f => {
     try {
-      const r = await fetch(`${base}/${f}`, { headers });
-      if (!r.ok) return `[${f}: ${r.status} - ${r.statusText}]`;
-      const text = await r.text();
-      // For the large incidents JSON, only send meta + summary + notes (not all 14K incidents)
+      const text = await fetchKBFile(f);
       if (f.endsWith('reference_pd_incidents.json')) {
         try {
           const data = JSON.parse(text);
@@ -743,7 +776,7 @@ async function fetchKB() {
       }
       return `[${f}]\n${text}`;
     } catch(e) {
-      return `[${f}: fetch error - ${e.message}]`;
+      return `[${f}: ${e.message}]`;
     }
   }));
   return results.join('\n\n---\n\n');
@@ -821,10 +854,21 @@ RESPONSE FORMAT — always use this exact structure:
 6. **Historical Match** — similar past incidents from the KB, with resolution that was used
 7. **Confidence** — High / Medium / Low + reason`;
 
+    const anthropicKey = localStorage.getItem('oa_anthropic_key') || '';
+    if (!anthropicKey) {
+      label.textContent = 'No Anthropic API key set — add it in the sidebar';
+      btn.disabled = false;
+      btn.textContent = 'Analyze →';
+      return;
+    }
     const claudeUrl = 'https://corsproxy.io/?url=' + encodeURIComponent('https://api.anthropic.com/v1/messages');
     const response = await fetch(claudeUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 2000,
