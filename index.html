@@ -834,7 +834,7 @@ window.loadTServerIframe = function(action) {
       <div class="tserver-iframe-header">
         <span class="tserver-iframe-label">${escHtml(label)} — ${escHtml(host)}</span>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="tserver-copy-btn" id="btn-copy-${action}" onclick="copyIframeAction('${escHtml(url)}','${action}')">📋 Copy</button>
+          <button class="tserver-copy-btn" id="btn-copy-${action}" onclick="copyIframeAction('${escHtml(url)}','${action}')">📋 Copy to textarea</button>
           <a class="tserver-open-btn" href="${escHtml(url)}" target="_blank">↗ Open</a>
         </div>
       </div>
@@ -843,48 +843,87 @@ window.loadTServerIframe = function(action) {
   `;
 };
 
-// Copy = open URL in new tab + focus paste area with instructions
-window.copyIframeAction = function(url, action) {
-  // Open in new tab so PE can Ctrl+A, Ctrl+C
-  window.open(url, '_blank');
-
-  // Show toast
-  const label = action === 'vmstate' ? 'VM State' : 'TServer Status';
-  showToast(`📋 ${label} opened in new tab — Ctrl+A, Ctrl+C, then paste below`, 'var(--accent)', 5000);
-
-  // Highlight + scroll to paste area
-  const paste = document.getElementById('vmstate-paste');
-  if (paste) {
-    paste.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    paste.focus();
-    paste.style.borderColor = 'var(--accent)';
-    paste.style.boxShadow   = '0 0 0 2px var(--accent-dim)';
-    paste.placeholder = '← Ctrl+A, Ctrl+C in the new tab — then Ctrl+V here';
-    setTimeout(() => {
-      paste.style.borderColor = '';
-      paste.style.boxShadow   = '';
-      paste.placeholder = '1. Open VM State above  2. Select All + Copy  3. Paste here before clicking Analyze';
-    }, 5000);
-  }
-
-  // Flash confirmation on the button
+// Copy to textarea = fetch via proxy → dump into paste area directly
+window.copyIframeAction = async function(url, action) {
   const btn = document.getElementById(`btn-copy-${action}`);
-  if (btn) {
-    const orig = btn.textContent;
-    btn.textContent = '✓ Opened';
-    btn.style.background = 'var(--green)';
-    btn.style.color = '#000';
-    setTimeout(() => {
-      btn.textContent = orig;
+  const label = action === 'vmstate' ? 'VM State' : 'TServer Status';
+
+  // Button loading state
+  if (btn) { btn.textContent = '⏳ Fetching…'; btn.disabled = true; }
+
+  try {
+    const r = await fetch('https://corsproxy.io/?url=' + encodeURIComponent(url), {
+      signal: AbortSignal.timeout(8000)
+    });
+
+    if (!r.ok) throw new Error(`HTTP ${r.status}${r.status === 526 ? ' — SSL error' : ''}`);
+
+    const text = await r.text();
+
+    // Dump into paste textarea
+    const paste = document.getElementById('vmstate-paste');
+    if (paste) {
+      paste.value = text.substring(0, 20000);
+      paste.style.borderColor = 'var(--green)';
+      paste.style.boxShadow   = '0 0 0 2px #3fb95033';
+      setTimeout(() => { paste.style.borderColor = ''; paste.style.boxShadow = ''; }, 3000);
+    }
+
+    // Button confirmation
+    if (btn) {
+      btn.textContent = '✅ Copied to textarea';
+      btn.style.background = 'var(--green)';
+      btn.style.color = '#000';
+      setTimeout(() => {
+        btn.textContent = '📋 Copy to textarea';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.disabled = false;
+      }, 3000);
+    }
+
+    showToast(`✅ ${label} copied to textarea`, 'var(--green)', 3500);
+
+  } catch(e) {
+    // Proxy failed — fall back to opening new tab
+    window.open(url, '_blank');
+
+    if (btn) {
+      btn.textContent = '📋 Copy to textarea';
       btn.style.background = '';
       btn.style.color = '';
-    }, 2500);
+      btn.disabled = false;
+    }
+
+    const paste = document.getElementById('vmstate-paste');
+    if (paste) {
+      paste.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      paste.focus();
+      paste.placeholder = '← Proxy failed. Opened in new tab — Ctrl+A, Ctrl+C, paste here.';
+      setTimeout(() => {
+        paste.placeholder = '1. Open VM State above  2. Select All + Copy  3. Paste here before clicking Analyze';
+      }, 6000);
+    }
+
+    showToast(`⚠️ Proxy failed (${e.message}) — opened in new tab instead. Paste manually below.`, 'var(--yellow)', 6000);
   }
 };
 
 window.toggleAlertCard = function(idx) {
   document.getElementById(`alert-body-${idx}`).classList.toggle('open');
   document.getElementById(`alert-toggle-${idx}`).classList.toggle('open');
+};
+
+// ── Global: called by Claude in Chrome shortcut to inject VM State ─────────────
+window.receiveVMState = function(text) {
+  const paste = document.getElementById('vmstate-paste');
+  if (!paste) { showToast('⚠️ No paste area found — select an incident first', 'var(--yellow)', 4000); return; }
+  paste.value = text;
+  paste.style.borderColor = 'var(--green)';
+  paste.style.boxShadow   = '0 0 0 2px #3fb95033';
+  paste.dispatchEvent(new Event('input', { bubbles: true }));
+  setTimeout(() => { paste.style.borderColor = ''; paste.style.boxShadow = ''; }, 3000);
+  showToast('✅ VM State captured from iframe', 'var(--green)', 4000);
 };
 
 // ── Toast notification ────────────────────────────────────────────────────────
@@ -947,6 +986,26 @@ function syntaxHighlight(obj) {
 }
 
 // ── TServer live data fetch ───────────────────────────────────────────────────
+// Priority order:
+//   1. Read iframe directly (works when Claude in Chrome extension is active)
+//   2. Fetch via corsproxy (works for public SSL servers without VPN)
+//   3. Manually pasted content in the textarea (always works, user action required)
+
+function readIframeContent(action) {
+  // The extension bypasses same-origin — try direct iframe read first
+  try {
+    const iframes = document.querySelectorAll('#tserver-iframe-container iframe');
+    for (const iframe of iframes) {
+      // Match by src containing the right mpactionid
+      const actionId = action === 'vmstate' ? '1073741829' : '1';
+      if (!iframe.src.includes(`mpactionid=${actionId}`)) continue;
+      const text = iframe.contentDocument?.body?.innerText;
+      if (text && text.trim().length > 20) return text.trim();
+    }
+  } catch(e) { /* same-origin block — extension not active or iframe not loaded */ }
+  return null;
+}
+
 async function fetchTServerData(host) {
   const proxy = 'https://corsproxy.io/?url=';
   const results = {};
@@ -971,19 +1030,28 @@ async function fetchTServerData(host) {
     }
   };
 
+  // Step 1: try iframe read (extension path)
+  const iframeStatus  = readIframeContent('status');
+  const iframeVmstate = readIframeContent('vmstate');
+
+  // Step 2: proxy fetch for anything not read from iframe
   const [statusRes, vmstateRes] = await Promise.all([
-    tryFetch('TServer Status', `https://${host}/?mpactionid=1`),
-    tryFetch('VM State',       `https://${host}/?mpactionid=1073741829`),
+    iframeStatus  ? Promise.resolve({ ok: true, text: iframeStatus,  source: 'iframe' })
+                  : tryFetch('TServer Status', `https://${host}/?mpactionid=1`),
+    iframeVmstate ? Promise.resolve({ ok: true, text: iframeVmstate, source: 'iframe' })
+                  : tryFetch('VM State',       `https://${host}/?mpactionid=1073741829`),
   ]);
 
   results.status        = statusRes.text;
   results.status_ok     = statusRes.ok;
+  results.status_source = statusRes.source;
   results.vmstate       = vmstateRes.text;
   results.vmstate_ok    = vmstateRes.ok;
+  results.vmstate_source= vmstateRes.source;
   results.status_reason = statusRes.reason;
   results.vmstate_reason= vmstateRes.reason;
 
-  // Override with manually pasted VM state if present
+  // Step 3: manually pasted content overrides proxy result (user explicitly pasted)
   const pasteEl = document.getElementById('vmstate-paste');
   if (pasteEl && pasteEl.value.trim()) {
     results.vmstate        = pasteEl.value.trim();
@@ -994,29 +1062,31 @@ async function fetchTServerData(host) {
   // Show fetch status in the UI
   const statusEl = document.getElementById('tserver-fetch-status');
   if (statusEl) {
-    const mkRow = (label, res, source) => {
+    const sourceLabel = src => src === 'iframe' ? '📡 Read from iframe (extension)'
+                             : src === 'manual_paste' ? '📋 Pasted manually'
+                             : '🌐 Fetched via proxy';
+    const mkRow = (label, res) => {
       const icon = res.ok ? '✅' : '⚠️';
-      const txt  = res.ok ? (source === 'manual_paste' ? 'Pasted manually' : 'Fetched via proxy') : res.reason;
+      const txt  = res.ok ? sourceLabel(res.source) : res.reason;
       const col  = res.ok ? 'var(--green)' : 'var(--yellow)';
       return `<span style="color:${col};margin-right:12px">${icon} ${label}: ${txt}</span>`;
     };
     statusEl.style.display = 'block';
     statusEl.innerHTML = `
       <div style="font-size:11px;font-family:var(--mono);padding:6px 14px;border-top:1px solid var(--border2);color:var(--text-muted)">
-        Auto-fetch results:<br>
-        ${mkRow('Status', statusRes, null)}
-        ${mkRow('VM State', { ok: results.vmstate_ok, reason: results.vmstate_reason }, results.vmstate_source)}
-        ${(!results.vmstate_ok && !results.vmstate_source) ? '<span style="color:var(--text-dim)">→ Open VM State above, click Copy, paste below</span>' : ''}
+        Data sources:<br>
+        ${mkRow('Status',   { ok: results.status_ok,  source: results.status_source,  reason: results.status_reason  })}
+        ${mkRow('VM State', { ok: results.vmstate_ok, source: results.vmstate_source, reason: results.vmstate_reason })}
+        ${(!results.vmstate_ok && !results.vmstate_source) ? '<span style="color:var(--text-dim)">→ Open VM State above, then click "Copy to textarea"</span>' : ''}
       </div>`;
 
-    // Toast if either failed
-    if (!statusRes.ok || !results.vmstate_ok) {
-      const failReasons = [];
-      if (!statusRes.ok)      failReasons.push(`Status: ${statusRes.reason}`);
-      if (!results.vmstate_ok && !results.vmstate_source) failReasons.push(`VM State: ${results.vmstate_reason}`);
-      showToast(`⚠️ Auto-fetch failed — ${failReasons[0]}. Use Copy button → paste below.`, 'var(--yellow)', 6000);
-    } else {
-      showToast('✅ TServer data fetched successfully', 'var(--green)', 3000);
+    // Toast feedback
+    if (!results.status_ok && !results.vmstate_ok) {
+      showToast(`⚠️ TServer data unavailable — open VM State, click "Copy to textarea"`, 'var(--yellow)', 6000);
+    } else if (results.vmstate_source === 'iframe') {
+      showToast('✅ VM State read directly from iframe', 'var(--green)', 3000);
+    } else if (results.status_ok || results.vmstate_ok) {
+      showToast('✅ TServer data fetched via proxy', 'var(--green)', 3000);
     }
   }
 
@@ -1078,11 +1148,18 @@ async function proceedToAnalysis(inc, alerts) {
   if (!btn || btn.disabled) return;
 
   btn.disabled = true;
-  label.textContent = 'Fetching TServer data…';
-  btn.textContent = 'Fetching…';
+  label.textContent = 'Preparing…';
+  btn.textContent = 'Preparing…';
 
-  // Fetch TServer live data + KB in parallel
   const host = window._tsHost || null;
+
+  // Auto-load VM State iframe if not already open — gives extension a chance to read it
+  if (host && !document.querySelector('#tserver-iframe-container iframe')) {
+    loadTServerIframe('vmstate');
+    // Brief pause for iframe to load before we try to read it
+    await new Promise(r => setTimeout(r, 2000));
+    label.textContent = 'Reading VM State…';
+  }
   const [tsData, kbContent] = await Promise.all([
     host ? fetchTServerData(host) : Promise.resolve(null),
     (async () => {
