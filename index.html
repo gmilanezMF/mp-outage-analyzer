@@ -145,6 +145,15 @@
   .tserver-paste-area { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:var(--mono); font-size:11px; padding:8px 10px; resize:vertical; outline:none; line-height:1.5; }
   .tserver-paste-area:focus { border-color:var(--accent); }
   .tserver-paste-area::placeholder { color:var(--text-dim); }
+  .tserver-extra-urls { font-size:11px; color:var(--text-muted); margin-top:6px; line-height:1.8; }
+  .tserver-alt-url { font-family:var(--mono); font-size:11px; color:var(--accent); cursor:pointer; text-decoration:underline; display:inline-block; margin-right:8px; }
+  .tserver-alt-url:hover { color:var(--text); }
+  .tserver-iframe-header { display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--surface2);border-bottom:1px solid var(--border2);border-radius:6px 6px 0 0; }
+  .tserver-iframe-label { font-size:11px;font-family:var(--mono);color:var(--text-muted); }
+  .tserver-copy-btn { font-size:11px;padding:3px 10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer;font-family:var(--mono);transition:all .15s; }
+  .tserver-copy-btn:hover { border-color:var(--accent);color:var(--accent); }
+  .tserver-open-btn { font-size:11px;padding:3px 10px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--text-muted);text-decoration:none;font-family:var(--mono);transition:all .15s; }
+  .tserver-open-btn:hover { color:var(--accent);border-color:var(--accent); }
 
   .alert-card { border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:10px; }
   .alert-card:last-child { margin-bottom:0; }
@@ -269,10 +278,71 @@ const PD_BASE    = 'https://api.pagerduty.com';
 const PE_TEAM    = 'P3P5G66';
 const LS_KEY     = 'oa_pd_api_key';
 const CONVERT_RE = /([a-z0-9\-]+\.convertlanguage\.com)/i;
+// Also match bare server names from TSERVER/LB TSERVERS title format
+const TSERVER_TITLE_RE = /(?:LB\s+)?TSERVER[S]?:\s+[^,]+,\s+([a-z0-9\-]+)/i;
 
 let pdKey = '';
 let incidents = [];
 let activeIframeAction = null;
+let convertUrlKB = null; // cached reference_convertlanguage_urls.json
+
+// ── Load convertlanguage KB (called once after connect) ───────────────────────
+async function loadConvertUrlKB() {
+  if (convertUrlKB) return; // already loaded
+  try {
+    const ghToken = localStorage.getItem('oa_gh_token') || '';
+    const apiUrl  = `https://api.github.com/repos/gmilanezMF/mp-platform-kb/contents/kb/project/reference_convertlanguage_urls.json?ref=main`;
+    const headers = { 'Accept': 'application/vnd.github.v3.raw', ...(ghToken ? { 'Authorization': `token ${ghToken}` } : {}) };
+    const r = await fetch(apiUrl, { headers });
+    if (r.ok) convertUrlKB = await r.json();
+  } catch(e) { /* silent — lookup will just return null */ }
+}
+
+// ── Extract client name from PD title ────────────────────────────────────────
+function clientNameFromTitle(title) {
+  // "TSERVER: ClientName, server" → ClientName
+  let m = title.match(/(?:LB\s+)?TSERVER[S]?:\s+([^,]+),/i);
+  if (m) return m[1].trim();
+  // "ServerView: ClientName: ..." → ClientName
+  m = title.match(/ServerView:\s+([^:#(]+)/i);
+  if (m) return m[1].trim();
+  return null;
+}
+
+// ── Fuzzy client name match against KB ───────────────────────────────────────
+function lookupClientInKB(clientName) {
+  if (!convertUrlKB || !convertUrlKB.clients || !clientName) return null;
+  const needle = clientName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  let best = null, bestScore = 0;
+  for (const [name, data] of Object.entries(convertUrlKB.clients)) {
+    const hay = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // exact match
+    if (hay === needle) return data.servers?.[0]?.url || null;
+    // substring match — score by overlap length
+    const shorter = needle.length < hay.length ? needle : hay;
+    const longer  = needle.length < hay.length ? hay : needle;
+    if (longer.includes(shorter) && shorter.length > bestScore) {
+      bestScore = shorter.length;
+      best = data.servers?.[0]?.url || null;
+    }
+  }
+  return bestScore >= 4 ? best : null; // min 4 chars to avoid false matches
+}
+
+// ── Get all URLs for a matched client ────────────────────────────────────────
+function allUrlsForClient(clientName) {
+  if (!convertUrlKB || !convertUrlKB.clients || !clientName) return [];
+  const needle = clientName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  for (const [name, data] of Object.entries(convertUrlKB.clients)) {
+    const hay = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const shorter = needle.length < hay.length ? needle : hay;
+    const longer  = needle.length < hay.length ? hay : needle;
+    if (hay === needle || (longer.includes(shorter) && shorter.length >= 4)) {
+      return data.servers?.map(s => s.url) || [];
+    }
+  }
+  return [];
+}
 
 // ── API key persistence ───────────────────────────────────────────────────────
 function saveKey(key) {
@@ -314,6 +384,17 @@ document.getElementById('btn-clear-key').addEventListener('click', () => {
   document.getElementById('main-panel').innerHTML = `
     <div class="no-selection"><div class="no-selection-icon">📋</div><div class="no-selection-title">No incident selected</div><div class="no-selection-sub">Connect to PagerDuty, then select a PE incident to begin</div></div>
   `;
+});
+
+// ── Paste confirmation ────────────────────────────────────────────────────────
+document.addEventListener('paste', e => {
+  if (document.activeElement?.id === 'vmstate-paste') {
+    const confirm = document.getElementById('vmstate-paste-confirm');
+    if (confirm) {
+      confirm.style.display = 'block';
+      setTimeout(() => { confirm.style.display = 'none'; }, 2500);
+    }
+  }
 });
 
 // ── Anthropic API key ─────────────────────────────────────────────────────────
@@ -367,6 +448,7 @@ function connect(silent = false) {
   document.getElementById('btn-connect').textContent = '✓';
   document.getElementById('filter-section').style.display = '';
   loadIncidents();
+  loadConvertUrlKB(); // pre-load KB for instant host detection
 }
 
 // ── PD fetch ──────────────────────────────────────────────────────────────────
@@ -492,12 +574,27 @@ async function selectIncident(idx) {
 
 // ── Detect convertlanguage host ───────────────────────────────────────────────
 function detectConvertHost(inc, alerts) {
-  let m = inc.title.match(CONVERT_RE);
+  const title = inc.title;
+
+  // Method 1: full *.convertlanguage.com URL in title or alerts
+  let m = title.match(CONVERT_RE);
   if (m) return m[1];
   for (const a of alerts) {
     const found = searchForConvert(a);
     if (found) return found;
   }
+
+  // Method 2: bare server name from TSERVER title format → append domain
+  m = title.match(TSERVER_TITLE_RE);
+  if (m) return `${m[1].trim()}.convertlanguage.com`;
+
+  // Method 3: client name → KB lookup
+  const clientName = clientNameFromTitle(title);
+  if (clientName) {
+    const kbUrl = lookupClientInKB(clientName);
+    if (kbUrl) return kbUrl;
+  }
+
   return null;
 }
 
@@ -626,7 +723,7 @@ function renderDetail(inc, alerts, convertHost) {
   }).join('') : '<div class="muted">No alerts found.</div>';
 
   body.innerHTML = `
-    ${buildTServerSection(convertHost)}
+    ${buildTServerSection(convertHost, inc)}
     ${makeSection('overview', 'Overview', overviewHtml, null, true)}
     ${makeSection('alerts',   'Alerts',   alertsHtml,   alerts.length, true)}
   `;
@@ -647,17 +744,39 @@ function renderDetail(inc, alerts, convertHost) {
 }
 
 // ── TServer section ───────────────────────────────────────────────────────────
-function buildTServerSection(host) {
-  const hostRow = host
-    ? `<div class="tserver-host-row">
-         <div class="tserver-host-label">🟢 Auto-detected:</div>
-         <div class="tserver-host-val">${escHtml(host)}</div>
-       </div>`
-    : `<div class="tserver-host-row">
-         <div class="tserver-host-label">⚠️ Not detected — enter manually:</div>
-         <input type="text" id="ts-manual-input" class="tserver-host-manual" placeholder="client.convertlanguage.com">
-         <button class="btn btn-sm" id="ts-manual-btn">Set</button>
-       </div>`;
+function buildTServerSection(host, inc) {
+  const clientName = inc ? clientNameFromTitle(inc.title) : null;
+  const allUrls    = clientName ? allUrlsForClient(clientName) : [];
+  const fromKB     = host && allUrls.includes(host);
+  const fromTitle  = host && !fromKB;
+
+  let hostRow;
+  if (host) {
+    const sourceLabel = fromKB ? '📚 KB lookup' : allUrls.length ? '📡 Detected' : '📡 Detected';
+    const extraUrls = allUrls.filter(u => u !== host);
+    const extraHtml = extraUrls.length
+      ? `<div class="tserver-extra-urls">Other servers for this client:<br>${extraUrls.map(u =>
+          `<span class="tserver-alt-url" onclick="window._tsHost='${u}';this.closest('.tserver-host-row').nextSibling && applyManualHost('${u}')" title="Click to switch">${escHtml(u)}</span>`
+        ).join('<br>')}</div>` : '';
+    hostRow = `<div class="tserver-host-row">
+      <div class="tserver-host-label">🟢 Auto-detected <span style="font-size:10px;color:var(--text-dim)">(${sourceLabel})</span>:</div>
+      <div class="tserver-host-val">${escHtml(host)}</div>
+      ${extraHtml}
+    </div>`;
+  } else {
+    const kbSuggestions = allUrls.length
+      ? `<div class="tserver-extra-urls">KB suggests for <strong>${escHtml(clientName || '?')}</strong>:<br>${allUrls.map(u =>
+          `<span class="tserver-alt-url" onclick="applyManualHost('${u}')" title="Click to use">${escHtml(u)}</span>`
+        ).join('<br>')}</div>` : '';
+    hostRow = `<div class="tserver-host-row">
+      <div class="tserver-host-label">⚠️ Not detected — enter manually:</div>
+      <div style="display:flex;gap:6px;margin-top:4px;">
+        <input type="text" id="ts-manual-input" class="tserver-host-manual" placeholder="client.convertlanguage.com">
+        <button class="btn btn-sm" id="ts-manual-btn">Set</button>
+      </div>
+      ${kbSuggestions}
+    </div>`;
+  }
 
   if (host) window._tsHost = host;
 
@@ -671,10 +790,14 @@ function buildTServerSection(host) {
           <button class="tserver-btn" id="btn-status"  onclick="loadTServerIframe('status')">✅ TServer Status</button>
         </div>
         <div id="tserver-iframe-container"></div>
+        <div id="tserver-fetch-status" style="display:none"></div>
         <div class="tserver-vpn-note">⚠️ VPN required for mpactionid endpoints · App auto-fetches via proxy at analysis time</div>
         <div class="tserver-paste-section">
-          <div class="tserver-paste-label">📋 VM State — paste output here if proxy can't reach it (VPN-only servers)</div>
-          <textarea id="vmstate-paste" class="tserver-paste-area" placeholder="Paste VM State output here (?mpactionid=1073741829)…" rows="4"></textarea>
+          <div class="tserver-paste-label">📋 VM State paste — use if auto-fetch fails (SSL/VPN issues)</div>
+          <div style="position:relative">
+            <textarea id="vmstate-paste" class="tserver-paste-area" placeholder="1. Open VM State above  2. Select All + Copy  3. Paste here before clicking Analyze" rows="4"></textarea>
+            <div id="vmstate-paste-confirm" style="display:none;position:absolute;top:8px;right:8px;background:var(--green);color:#000;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;font-family:var(--mono);">✓ Pasted</div>
+          </div>
         </div>
       </div>
     </div>
@@ -703,18 +826,99 @@ window.loadTServerIframe = function(action) {
   activeIframeAction = action;
   document.getElementById('btn-vmstate').classList.toggle('active', action === 'vmstate');
   document.getElementById('btn-status').classList.toggle('active', action === 'status');
-  const url = `https://${host}/?mpactionid=${action === 'vmstate' ? '1073741829' : '1'}`;
+  const actionId = action === 'vmstate' ? '1073741829' : '1';
+  const label    = action === 'vmstate' ? 'VM State' : 'TServer Status';
+  const url      = `https://${host}/?mpactionid=${actionId}`;
   document.getElementById('tserver-iframe-container').innerHTML = `
     <div class="tserver-iframe-wrap">
-      <iframe src="${escHtml(url)}" title="${action === 'vmstate' ? 'VM State' : 'TServer Status'}"></iframe>
+      <div class="tserver-iframe-header">
+        <span class="tserver-iframe-label">${escHtml(label)} — ${escHtml(host)}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="tserver-copy-btn" id="btn-copy-${action}" onclick="copyIframeAction('${escHtml(url)}','${action}')">📋 Copy</button>
+          <a class="tserver-open-btn" href="${escHtml(url)}" target="_blank">↗ Open</a>
+        </div>
+      </div>
+      <iframe src="${escHtml(url)}" title="${label}"></iframe>
     </div>
   `;
+};
+
+// Copy = open URL in new tab + focus paste area with instructions
+window.copyIframeAction = function(url, action) {
+  // Open in new tab so PE can Ctrl+A, Ctrl+C
+  window.open(url, '_blank');
+
+  // Show toast
+  const label = action === 'vmstate' ? 'VM State' : 'TServer Status';
+  showToast(`📋 ${label} opened in new tab — Ctrl+A, Ctrl+C, then paste below`, 'var(--accent)', 5000);
+
+  // Highlight + scroll to paste area
+  const paste = document.getElementById('vmstate-paste');
+  if (paste) {
+    paste.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    paste.focus();
+    paste.style.borderColor = 'var(--accent)';
+    paste.style.boxShadow   = '0 0 0 2px var(--accent-dim)';
+    paste.placeholder = '← Ctrl+A, Ctrl+C in the new tab — then Ctrl+V here';
+    setTimeout(() => {
+      paste.style.borderColor = '';
+      paste.style.boxShadow   = '';
+      paste.placeholder = '1. Open VM State above  2. Select All + Copy  3. Paste here before clicking Analyze';
+    }, 5000);
+  }
+
+  // Flash confirmation on the button
+  const btn = document.getElementById(`btn-copy-${action}`);
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Opened';
+    btn.style.background = 'var(--green)';
+    btn.style.color = '#000';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 2500);
+  }
 };
 
 window.toggleAlertCard = function(idx) {
   document.getElementById(`alert-body-${idx}`).classList.toggle('open');
   document.getElementById(`alert-toggle-${idx}`).classList.toggle('open');
 };
+
+// ── Toast notification ────────────────────────────────────────────────────────
+function showToast(msg, color = 'var(--green)', duration = 3000) {
+  let toast = document.getElementById('oa-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'oa-toast';
+    toast.style.cssText = `
+      position:fixed;bottom:24px;right:24px;z-index:9999;
+      background:var(--surface);border:1px solid var(--border);border-radius:8px;
+      padding:10px 16px;font-size:13px;font-family:var(--mono);
+      box-shadow:0 4px 16px #0008;pointer-events:none;
+      transition:opacity .3s;opacity:0;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.style.borderColor = color;
+  toast.style.color = color;
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, duration);
+}
+
+// ── Paste confirmation on vmstate textarea ────────────────────────────────────
+document.addEventListener('paste', e => {
+  if (document.activeElement?.id === 'vmstate-paste') {
+    setTimeout(() => {
+      const val = document.getElementById('vmstate-paste')?.value?.trim();
+      if (val) showToast('✅ VM State pasted — included in analysis', 'var(--green)', 3500);
+    }, 50);
+  }
+});
 
 function makeSection(id, title, content, count, defaultOpen) {
   return `
@@ -750,27 +954,70 @@ async function fetchTServerData(host) {
   const tryFetch = async (label, url) => {
     try {
       const r = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) });
-      if (!r.ok) return `[${label}: HTTP ${r.status}]`;
+      if (!r.ok) {
+        const reason = r.status === 526 ? 'SSL certificate error (526) — server has invalid/expired cert'
+                     : r.status === 504 ? 'Gateway timeout — server unreachable'
+                     : r.status === 403 ? 'Access denied (403) — IP may be blocked'
+                     : `HTTP ${r.status}`;
+        return { ok: false, text: `[${label}: ${reason}]`, reason };
+      }
       const text = await r.text();
-      return text.substring(0, 8000); // cap size
+      return { ok: true, text: text.substring(0, 8000) };
     } catch(e) {
-      return `[${label}: unreachable — ${e.message}]`;
+      const reason = e.name === 'TimeoutError' ? 'Timed out after 8s — likely VPN-only'
+                   : e.message.includes('SSL') ? 'SSL/TLS error'
+                   : `Network error — ${e.message}`;
+      return { ok: false, text: `[${label}: ${reason}]`, reason };
     }
   };
 
-  const [status, vmstate] = await Promise.all([
+  const [statusRes, vmstateRes] = await Promise.all([
     tryFetch('TServer Status', `https://${host}/?mpactionid=1`),
     tryFetch('VM State',       `https://${host}/?mpactionid=1073741829`),
   ]);
 
-  results.status  = status;
-  results.vmstate = vmstate;
+  results.status        = statusRes.text;
+  results.status_ok     = statusRes.ok;
+  results.vmstate       = vmstateRes.text;
+  results.vmstate_ok    = vmstateRes.ok;
+  results.status_reason = statusRes.reason;
+  results.vmstate_reason= vmstateRes.reason;
 
-  // Also grab any manually pasted VM state from the textarea
+  // Override with manually pasted VM state if present
   const pasteEl = document.getElementById('vmstate-paste');
   if (pasteEl && pasteEl.value.trim()) {
-    results.vmstate = pasteEl.value.trim();
+    results.vmstate        = pasteEl.value.trim();
+    results.vmstate_ok     = true;
     results.vmstate_source = 'manual_paste';
+  }
+
+  // Show fetch status in the UI
+  const statusEl = document.getElementById('tserver-fetch-status');
+  if (statusEl) {
+    const mkRow = (label, res, source) => {
+      const icon = res.ok ? '✅' : '⚠️';
+      const txt  = res.ok ? (source === 'manual_paste' ? 'Pasted manually' : 'Fetched via proxy') : res.reason;
+      const col  = res.ok ? 'var(--green)' : 'var(--yellow)';
+      return `<span style="color:${col};margin-right:12px">${icon} ${label}: ${txt}</span>`;
+    };
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = `
+      <div style="font-size:11px;font-family:var(--mono);padding:6px 14px;border-top:1px solid var(--border2);color:var(--text-muted)">
+        Auto-fetch results:<br>
+        ${mkRow('Status', statusRes, null)}
+        ${mkRow('VM State', { ok: results.vmstate_ok, reason: results.vmstate_reason }, results.vmstate_source)}
+        ${(!results.vmstate_ok && !results.vmstate_source) ? '<span style="color:var(--text-dim)">→ Open VM State above, click Copy, paste below</span>' : ''}
+      </div>`;
+
+    // Toast if either failed
+    if (!statusRes.ok || !results.vmstate_ok) {
+      const failReasons = [];
+      if (!statusRes.ok)      failReasons.push(`Status: ${statusRes.reason}`);
+      if (!results.vmstate_ok && !results.vmstate_source) failReasons.push(`VM State: ${results.vmstate_reason}`);
+      showToast(`⚠️ Auto-fetch failed — ${failReasons[0]}. Use Copy button → paste below.`, 'var(--yellow)', 6000);
+    } else {
+      showToast('✅ TServer data fetched successfully', 'var(--green)', 3000);
+    }
   }
 
   return results;
